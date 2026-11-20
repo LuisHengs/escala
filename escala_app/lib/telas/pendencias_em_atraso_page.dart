@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../data/escala_repository.dart';
@@ -9,20 +8,15 @@ import '../formatacao.dart';
 class PendenciasEmAtrasoPage extends StatefulWidget {
   final EscalaRepository repositorio;
 
-  const PendenciasEmAtrasoPage({
-    super.key,
-    required this.repositorio,
-  });
+  const PendenciasEmAtrasoPage({super.key, required this.repositorio});
 
   @override
-  State<PendenciasEmAtrasoPage> createState() =>
-      _PendenciasEmAtrasoPageState();
+  State<PendenciasEmAtrasoPage> createState() => _PendenciasEmAtrasoPageState();
 }
 
-class _PendenciasEmAtrasoPageState
-    extends State<PendenciasEmAtrasoPage> {
-  late Future<List<PendenciaEmAtraso>> _pendencias =
-      widget.repositorio.pendenciasEmAtraso();
+class _PendenciasEmAtrasoPageState extends State<PendenciasEmAtrasoPage> {
+  late Future<List<PendenciaEmAtraso>> _pendencias = widget.repositorio
+      .pendenciasEmAtraso();
 
   void _recarregar() {
     setState(() {
@@ -57,9 +51,7 @@ class _PendenciasEmAtrasoPageState
         future: _pendencias,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError) {
@@ -69,10 +61,7 @@ class _PendenciasEmAtrasoPageState
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 40,
-                    ),
+                    const Icon(Icons.error_outline, size: 40),
                     const SizedBox(height: 12),
                     const Text(
                       'Não foi possível carregar as pendências.',
@@ -99,16 +88,9 @@ class _PendenciasEmAtrasoPageState
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: const [
                   SizedBox(height: 180),
-                  Icon(
-                    Icons.check_circle_outline,
-                    size: 48,
-                  ),
+                  Icon(Icons.check_circle_outline, size: 48),
                   SizedBox(height: 16),
-                  Center(
-                    child: Text(
-                      'Nenhuma pendência em atraso.',
-                    ),
-                  ),
+                  Center(child: Text('Nenhuma pendência em atraso.')),
                 ],
               ),
             );
@@ -165,9 +147,7 @@ class _PendenciasEmAtrasoPageState
             const SizedBox(height: 4),
             Text(
               'Confirmação pendente',
-              style: estilos.bodySmall?.copyWith(
-                color: Colors.deepOrange,
-              ),
+              style: estilos.bodySmall?.copyWith(color: Colors.deepOrange),
             ),
           ],
         ),

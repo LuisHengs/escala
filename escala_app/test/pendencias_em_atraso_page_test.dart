@@ -1,4 +1,3 @@
-
 import 'package:escala_app/data/pendencia_em_atraso.dart';
 import 'package:escala_app/telas/pendencias_em_atraso_page.dart';
 import 'package:flutter/material.dart';
@@ -14,9 +13,7 @@ void main() {
 
   Future<void> montar(WidgetTester t) async {
     await t.pumpWidget(
-      MaterialApp(
-        home: PendenciasEmAtrasoPage(repositorio: repo),
-      ),
+      MaterialApp(home: PendenciasEmAtrasoPage(repositorio: repo)),
     );
     await t.pumpAndSettle();
   }
@@ -36,21 +33,14 @@ void main() {
     );
   }
 
-  testWidgets('PA1: mostra mensagem quando não existem pendências', (
-    t,
-  ) async {
+  testWidgets('PA1: mostra mensagem quando não existem pendências', (t) async {
     await montar(t);
 
     expect(find.text('Pendências em atraso'), findsOneWidget);
-    expect(
-      find.text('Nenhuma pendência em atraso.'),
-      findsOneWidget,
-    );
+    expect(find.text('Nenhuma pendência em atraso.'), findsOneWidget);
   });
 
-  testWidgets('PA2: mostra os dados dos coroinhas pendentes', (
-    t,
-  ) async {
+  testWidgets('PA2: mostra os dados dos coroinhas pendentes', (t) async {
     repo.pendenciasCadastradas = [
       criarPendencia(),
       criarPendencia(
@@ -72,8 +62,7 @@ void main() {
   testWidgets('PA3: apresenta opção para tentar novamente quando ocorre erro', (
     t,
   ) async {
-    repo.erroAoCarregarPendenciasEmAtraso =
-        Exception('Falha simulada');
+    repo.erroAoCarregarPendenciasEmAtraso = Exception('Falha simulada');
 
     await montar(t);
 
@@ -100,17 +89,13 @@ void main() {
     await t.pumpAndSettle();
 
     expect(repo.cargasPendenciasEmAtraso, 2);
-    expect(
-      find.text('Nenhuma pendência em atraso.'),
-      findsOneWidget,
-    );
+    expect(find.text('Nenhuma pendência em atraso.'), findsOneWidget);
   });
 
   testWidgets('PA5: tentar novamente recupera uma consulta que falhou', (
     t,
   ) async {
-    repo.erroAoCarregarPendenciasEmAtraso =
-        Exception('Falha simulada');
+    repo.erroAoCarregarPendenciasEmAtraso = Exception('Falha simulada');
 
     await montar(t);
 

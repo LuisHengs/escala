@@ -64,9 +64,8 @@ class AdminPage extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (_) => PendenciasEmAtrasoPage(
-                  repositorio: repositorio,
-                ),
+                builder: (_) =>
+                    PendenciasEmAtrasoPage(repositorio: repositorio),
               ),
             ),
           ),
