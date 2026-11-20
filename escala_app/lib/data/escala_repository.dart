@@ -1,0 +1,96 @@
+import 'local.dart';
+import 'item_escala.dart';
+import 'troca_disponivel.dart';
+import 'missa_cadastrada.dart';
+
+/// Em que ponto do caminho de acesso a pessoa está.
+///  - semLogin:  ainda não entrou com o Google;
+///  - semPerfil: entrou, mas ainda não resgatou um convite (o banco nega tudo);
+///  - membro:    tem perfil ativo e enxerga a escala;
+///  - administrador: membro com papel de administrador (vê a área de
+///    administração; o que ele pode fazer quem decide é o banco).
+enum EstadoAcesso { semLogin, semPerfil, membro, administrador }
+
+/// Tudo o que o app precisa do "mundo de fora" (banco, login). As telas só
+/// conhecem esta interface, nunca o Supabase. Nos testes entra uma versão
+/// falsa, e o app roda sem internet.
+///
+/// Falhas de regra chegam como [RegraDeNegocio] (ex.: ConviteUsado,
+/// PermissaoNegada), já traduzidas do código do banco.
+abstract class EscalaRepository {
+  /// Emite o estado de acesso agora e toda vez que o login ou o perfil mudar.
+  Stream<EstadoAcesso> get estadoAcesso;
+
+  Future<void> entrarComGoogle();
+
+  Future<void> sair();
+
+  /// Resgata o convite e cria o perfil de quem está logado.
+  ///
+  /// [responsavel] é opcional na tela: quem decide se ele é obrigatório é o
+  /// convite (o banco responde ResponsavelObrigatorio).
+  Future<void> resgatarConvite({
+    required String codigo,
+    required String nome,
+    String? responsavel,
+  });
+
+  /// As próximas missas em que a pessoa logada está escalada, em ordem.
+  Future<List<ItemEscala>> minhaEscala();
+
+  /// Confirma a presença da pessoa logada numa escalação dela.
+  Future<void> confirmarPresenca(String escalacaoId);
+
+  /// Abre um pedido de troca para uma escalação da pessoa logada. Todos os
+  /// membros passam a poder aceitá-lo.
+  Future<void> abrirTroca(String escalacaoId);
+
+  /// Cancela um pedido de troca ABERTO (o da pessoa logada, ou qualquer um se
+  /// for administrador).
+  Future<void> cancelarTroca(String trocaId);
+
+  /// Os pedidos de troca ABERTOS de outras pessoas, em missas que ainda não
+  /// começaram, em ordem de horário.
+  Future<List<TrocaDisponivel>> trocasDisponiveis();
+
+  /// Aceita o pedido de troca: a escalação passa para a pessoa logada, já
+  /// com a presença confirmada. Falhas de regra chegam como [RegraDeNegocio]
+  /// (ex.: ConflitoDeHorario, TrocaJaResolvida).
+  Future<void> aceitarTroca(String trocaId);
+
+  // ---------- administração ----------
+
+  /// (Administrador) Gera um convite e devolve o código, que só existe agora:
+  /// o banco guarda apenas o hash. [exigeResponsavel] é verdadeiro para menores
+  /// de idade.
+  Future<String> gerarConvite({required bool exigeResponsavel});
+
+  /// As igrejas e capelas cadastradas, em ordem alfabética.
+  Future<List<Local>> locais();
+
+  /// (Administrador) Cadastra um local. Falhas de regra chegam como
+  /// [RegraDeNegocio] (ex.: LocalDuplicado, NomeInvalido).
+  Future<void> criarLocal(String nome);
+
+  /// (Administrador) As missas cadastradas a partir de agora, em ordem de
+  /// horário, com o nome do local.
+  Future<List<MissaCadastrada>> missas();
+
+  /// (Administrador) Cadastra uma missa. [inicio] é a hora do aparelho.
+  /// Falhas de regra chegam como [RegraDeNegocio] (ex.: HorarioInvalido,
+  /// LocalInexistente).
+  Future<void> criarMissa({required DateTime inicio, required String localId});
+
+  /// (Administrador) Muda horário e/ou local de uma missa. [inicio] é a hora do
+  /// aparelho. Falhas de regra chegam como [RegraDeNegocio] (ex.:
+  /// ConflitoDeHorario).
+  Future<void> editarMissa({
+    required String missaId,
+    required DateTime inicio,
+    required String localId,
+  });
+
+  /// (Administrador) Remove uma missa. Se ainda houver coroinhas escalados,
+  /// chega [MissaComEscalados].
+  Future<void> removerMissa(String missaId);
+}

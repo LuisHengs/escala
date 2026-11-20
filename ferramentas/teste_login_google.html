@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teste de login Google (escala-dev)</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.1rem; margin-top: 1.6rem; }
+  .aviso { background: #fff4d6; border: 1px solid #e0b84a; padding: .6rem .8rem; border-radius: 6px; color: #4a3b00; }
+  label { display: block; margin: .5rem 0 .2rem; font-weight: 600; }
+  input[type=text], input[type=password] { width: 100%; padding: .45rem; box-sizing: border-box; }
+  .linha { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin-top: .5rem; }
+  button { padding: .5rem .9rem; cursor: pointer; }
+  pre { background: #111; color: #d8f5d0; padding: .8rem; border-radius: 6px; white-space: pre-wrap; word-break: break-word; min-height: 4rem; }
+  .oculto { display: none; }
+</style>
+</head>
+<body>
+
+<h1>Teste de login Google — projeto escala-dev</h1>
+<p class="aviso">
+  Página só para teste, no seu computador. Use <b>somente a chave pública</b>
+  (publishable/anon). <b>Nunca</b> cole aqui a chave <code>service_role</code>
+  nem o segredo do Google: o segredo do Google fica só no painel do Supabase.
+</p>
+
+<section id="bloco-config">
+  <h2>1. Conexão</h2>
+  <label for="url">URL do projeto (Project Settings → API)</label>
+  <input type="text" id="url" placeholder="https://SEU-PROJETO.supabase.co">
+  <label for="key">Chave pública (publishable / anon)</label>
+  <input type="password" id="key" placeholder="cole a chave pública">
+  <div class="linha"><button id="salvar">Salvar e recarregar</button></div>
+</section>
+
+<section id="bloco-login" class="oculto">
+  <h2>2. Login</h2>
+  <div class="linha">
+    <button id="entrar">Entrar com Google</button>
+    <button id="sair">Sair</button>
+  </div>
+</section>
+
+<section id="bloco-acoes" class="oculto">
+  <h2>3. Gerar convite (só funciona logado como admin)</h2>
+  <div class="linha">
+    <label style="margin:0"><input type="checkbox" id="exige" checked> exige responsável (menor de idade)</label>
+    <button id="gerar">Gerar convite</button>
+  </div>
+
+  <h2>4. Resgatar convite (logado com uma conta SEM perfil)</h2>
+  <label for="codigo">Código do convite</label>
+  <input type="text" id="codigo" autocomplete="off">
+  <label for="nome">Nome do coroinha</label>
+  <input type="text" id="nome" autocomplete="off">
+  <label for="resp">Nome do responsável (deixe vazio se o convite não exige)</label>
+  <input type="text" id="resp" autocomplete="off">
+  <div class="linha">
+    <button id="resgatar">Resgatar convite</button>
+    <button id="reverificar">Reverificar acesso</button>
+  </div>
+</section>
+
+<h2>Resultado</h2>
+<pre id="saida">(nada ainda)</pre>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  let sb = null;
+
+  // textContent (e não innerHTML): nomes vindos do banco nunca viram código.
+  function mostrar(titulo, valor) {
+    const agora = new Date().toLocaleTimeString('pt-BR');
+    const linha = '[' + agora + '] ' + titulo + ': ' + valor;
+    const atual = $('saida').textContent;
+    $('saida').textContent = (atual === '(nada ainda)' ? '' : atual + '\n') + linha;
+  }
+  const erro = (e) => 'ERRO -> ' + e.message;
+
+  $('url').value = localStorage.getItem('sb_url') || '';
+  $('key').value = localStorage.getItem('sb_key') || '';
+  $('salvar').onclick = () => {
+    localStorage.setItem('sb_url', $('url').value.trim());
+    localStorage.setItem('sb_key', $('key').value.trim());
+    location.reload();
+  };
+
+  async function verificar() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { mostrar('Sessão', 'ninguém logado'); return; }
+    mostrar('Logado como', session.user.email + '  (id ' + session.user.id + ')');
+
+    const m = await sb.rpc('eh_membro');
+    mostrar('É membro? (tem perfil ativo)', m.error ? erro(m.error) : String(m.data));
+
+    const l = await sb.from('locais').select('id, nome');
+    mostrar('Locais que a conta enxerga (RLS)', l.error ? erro(l.error) : l.data.length + ' linha(s)');
+  }
+
+  function iniciar() {
+    const url = localStorage.getItem('sb_url');
+    const key = localStorage.getItem('sb_key');
+    if (!url || !key) { mostrar('Configuração', 'preencha a URL e a chave pública e salve'); return; }
+
+    sb = supabase.createClient(url, key);
+    ['bloco-login', 'bloco-acoes'].forEach((id) => $(id).classList.remove('oculto'));
+
+    $('entrar').onclick = async () => {
+      const { error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: location.origin + location.pathname },
+      });
+      if (error) mostrar('Erro ao iniciar o login', error.message);
+    };
+    $('sair').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+    $('reverificar').onclick = verificar;
+
+    $('gerar').onclick = async () => {
+      const r = await sb.rpc('gerar_convite', { p_exige_responsavel: $('exige').checked });
+      mostrar('Gerar convite', r.error ? erro(r.error)
+        : 'código ' + r.data + '  (anote agora: só o hash fica guardado)');
+    };
+
+    $('resgatar').onclick = async () => {
+      const r = await sb.rpc('resgatar_convite', {
+        p_codigo: $('codigo').value,
+        p_nome: $('nome').value,
+        p_responsavel_nome: $('resp').value.trim() === '' ? null : $('resp').value,
+      });
+      mostrar('Resgatar convite', r.error ? erro(r.error) : 'perfil criado para ' + r.data.nome);
+      await verificar();
+    };
+
+    // Ao voltar do Google, o supabase-js troca o "?code=" pela sessão sozinho.
+    verificar().then(() => history.replaceState({}, '', location.pathname));
+  }
+  iniciar();
+</script>
+</body>
+</html>

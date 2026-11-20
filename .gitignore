@@ -1,0 +1,7 @@
+**/env.json
+supabase/scripts/admin.sql
+**/.dart_tool/
+**/build/
+**/.idea/
+*.iml
+.flutter-plugins-dependencies
