@@ -4,7 +4,10 @@ import 'package:escala_app/data/local.dart';
 import 'package:escala_app/data/item_escala.dart';
 import 'package:escala_app/data/troca_disponivel.dart';
 import 'package:escala_app/data/missa_cadastrada.dart';
+import 'package:escala_app/data/coroinha.dart';
+import 'package:escala_app/data/escalado_na_missa.dart';
 import 'package:escala_app/data/escala_repository.dart';
+import 'package:escala_app/data/pendencia_em_atraso.dart';
 
 /// Versão falsa do repositório, só para testes: o teste manda o estado que
 /// quiser, conta as chamadas que a tela fez e simula erro ou demora.
@@ -132,6 +135,98 @@ class FakeEscalaRepository implements EscalaRepository {
     if (erroAoRemoverMissa != null) throw erroAoRemoverMissa!;
     missasRemovidas.add(missaId);
     aoRemoverMissa?.call();
+  }
+
+  // ---------- administração: pendências em atraso ----------
+
+  /// Pendências que a consulta deve devolver.
+  List<PendenciaEmAtraso> pendenciasCadastradas = [];
+
+  /// Quantidade de consultas realizadas.
+  int cargasPendenciasEmAtraso = 0;
+
+  /// Se preenchido, a consulta lança este erro.
+  Object? erroAoCarregarPendenciasEmAtraso;
+
+  /// Se preenchido, a consulta espera até o teste liberar.
+  Completer<void>? travarCargaPendenciasEmAtraso;
+
+  @override
+  Future<List<PendenciaEmAtraso>> pendenciasEmAtraso() async {
+    cargasPendenciasEmAtraso++;
+
+    if (travarCargaPendenciasEmAtraso != null) {
+      await travarCargaPendenciasEmAtraso!.future;
+    }
+
+    if (erroAoCarregarPendenciasEmAtraso != null) {
+      throw erroAoCarregarPendenciasEmAtraso!;
+    }
+
+    return List.of(pendenciasCadastradas);
+  }
+
+  // ---------- administração: escala por missa ----------
+
+  List<Coroinha> coroinhasCadastrados = [];
+  int cargasCoroinhas = 0;
+  Object? erroAoCarregarCoroinhas;
+
+  @override
+  Future<List<Coroinha>> coroinhas() async {
+    cargasCoroinhas++;
+    if (erroAoCarregarCoroinhas != null) throw erroAoCarregarCoroinhas!;
+    return List.of(coroinhasCadastrados);
+  }
+
+  final escaladosPorMissa = <String, List<EscaladoNaMissa>>{};
+  final cargasEscaladosPorMissa = <String, int>{};
+  Object? erroAoCarregarEscalados;
+
+  @override
+  Future<List<EscaladoNaMissa>> escaladosDaMissa(String missaId) async {
+    cargasEscaladosPorMissa.update(
+      missaId,
+      (quantidade) => quantidade + 1,
+      ifAbsent: () => 1,
+    );
+    if (erroAoCarregarEscalados != null) throw erroAoCarregarEscalados!;
+    return List.of(escaladosPorMissa[missaId] ?? []);
+  }
+
+  final escalacoesCriadas =
+      <({String missaId, String coroinhaId, String funcao})>[];
+  Object? erroAoEscalar;
+  Completer<void>? travarEscalar;
+  void Function(String missaId, String coroinhaId, String funcao)? aoEscalar;
+
+  @override
+  Future<void> escalar({
+    required String missaId,
+    required String coroinhaId,
+    required String funcao,
+  }) async {
+    if (travarEscalar != null) await travarEscalar!.future;
+    if (erroAoEscalar != null) throw erroAoEscalar!;
+    escalacoesCriadas.add((
+      missaId: missaId,
+      coroinhaId: coroinhaId,
+      funcao: funcao,
+    ));
+    aoEscalar?.call(missaId, coroinhaId, funcao);
+  }
+
+  final escalacoesRemovidas = <String>[];
+  Object? erroAoDesescalar;
+  Completer<void>? travarDesescalar;
+  void Function(String escalacaoId)? aoDesescalar;
+
+  @override
+  Future<void> desescalar(String escalacaoId) async {
+    if (travarDesescalar != null) await travarDesescalar!.future;
+    if (erroAoDesescalar != null) throw erroAoDesescalar!;
+    escalacoesRemovidas.add(escalacaoId);
+    aoDesescalar?.call(escalacaoId);
   }
 
   // ---------- escala ----------

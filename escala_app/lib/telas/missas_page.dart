@@ -4,6 +4,7 @@ import '../formatacao.dart';
 import '../data/escala_repository.dart';
 import '../data/missa_cadastrada.dart';
 import 'nova_missa_page.dart';
+import 'escala_missa_page.dart';
 
 import 'package:escala_core/escala_core.dart';
 
@@ -51,7 +52,7 @@ class _MissasPageState extends State<MissasPage> {
     if (criou == true && mounted) _recarregar();
   }
 
-  bool _ocupado = false; // evita dois toques seguidos durante uma ação
+  bool _ocupado = false;
 
   Future<void> _editar(MissaCadastrada missa) async {
     final salvou = await Navigator.of(context).push<bool>(
@@ -64,6 +65,16 @@ class _MissasPageState extends State<MissasPage> {
       ),
     );
     if (salvou == true && mounted) _recarregar();
+  }
+
+  /// Abre a administração dos coroinhas da missa selecionada.
+  Future<void> _abrirEscala(MissaCadastrada missa) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) =>
+            EscalaMissaPage(repositorio: widget.repositorio, missa: missa),
+      ),
+    );
   }
 
   Future<void> _remover(MissaCadastrada missa) async {
@@ -158,6 +169,7 @@ class _MissasPageState extends State<MissasPage> {
                   leading: const Icon(Icons.event_outlined),
                   title: Text(formatarDataMissa(missa.inicio)),
                   subtitle: Text(missa.localNome),
+                  onTap: () => _abrirEscala(missa),
                   trailing: PopupMenuButton<String>(
                     tooltip: 'Ações da missa',
                     onSelected: (acao) {

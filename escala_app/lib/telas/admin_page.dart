@@ -4,6 +4,7 @@ import '../data/escala_repository.dart';
 import 'convites_page.dart';
 import 'locais_page.dart';
 import 'missas_page.dart';
+import 'pendencias_em_atraso_page.dart';
 
 /// O menu da área de administração. Cada item abre uma tela; novos itens
 /// entram aqui conforme as telas ficam prontas.
@@ -51,6 +52,21 @@ class AdminPage extends StatelessWidget {
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) => MissasPage(repositorio: repositorio),
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.warning_amber_outlined),
+            title: const Text('Pendências em atraso'),
+            subtitle: const Text(
+              'Coroinhas que ainda não confirmaram presença no prazo',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => PendenciasEmAtrasoPage(
+                  repositorio: repositorio,
+                ),
               ),
             ),
           ),

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:escala_core/escala_core.dart';
+import 'package:escala_core/escala_core.dart' hide Coroinha;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'local.dart';
@@ -8,6 +8,9 @@ import 'item_escala.dart';
 import 'escala_repository.dart';
 import 'troca_disponivel.dart';
 import 'missa_cadastrada.dart';
+import 'coroinha.dart';
+import 'escalado_na_missa.dart';
+import 'pendencia_em_atraso.dart';
 
 /// A versão de verdade: fala com o Supabase. É o ÚNICO arquivo (junto com o
 /// main.dart) que conhece o pacote supabase_flutter.
@@ -66,6 +69,7 @@ class SupabaseEscalaRepository implements EscalaRepository {
     await _client.auth.signInWithOAuth(
       OAuthProvider.google,
       redirectTo: '${Uri.base.origin}/',
+      queryParams: {'prompt': 'select_account'},
     );
   }
 
@@ -207,5 +211,52 @@ class SupabaseEscalaRepository implements EscalaRepository {
   @override
   Future<void> removerMissa(String missaId) async {
     await _chamarRegra('remover_missa', {'p_missa_id': missaId});
+  }
+
+  @override
+  Future<List<Coroinha>> coroinhas() async {
+    // Só pessoas ativas com papel de coroinha podem ser escaladas.
+    final linhas = await _client
+        .from('perfis')
+        .select('id, nome')
+        .eq('papel', 'coroinha')
+        .eq('ativo', true);
+    return Coroinha.listaDeJson(linhas);
+  }
+
+  @override
+  Future<List<EscaladoNaMissa>> escaladosDaMissa(String missaId) async {
+    final linhas = await _client
+        .from('escalacoes')
+        .select('id, coroinha_id, funcao, perfis(nome)')
+        .eq('missa_id', missaId);
+    return EscaladoNaMissa.listaDeJson(linhas);
+  }
+
+  @override
+  Future<List<PendenciaEmAtraso>> pendenciasEmAtraso() async {
+    // A função verifica as pendências usando now() do próprio banco.
+    // A autorização de administrador também é validada no PostgreSQL.
+    final linhas = await _client.rpc('pendentes_em_atraso');
+
+    return PendenciaEmAtraso.listaDeJson(linhas as List<dynamic>);
+  }
+
+  @override
+  Future<void> escalar({
+    required String missaId,
+    required String coroinhaId,
+    required String funcao,
+  }) async {
+    await _chamarRegra('escalar', {
+      'p_missa_id': missaId,
+      'p_coroinha_id': coroinhaId,
+      'p_funcao': funcao,
+    });
+  }
+
+  @override
+  Future<void> desescalar(String escalacaoId) async {
+    await _chamarRegra('desescalar', {'p_escalacao_id': escalacaoId});
   }
 }
