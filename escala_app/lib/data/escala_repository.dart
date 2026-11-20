@@ -2,6 +2,9 @@ import 'local.dart';
 import 'item_escala.dart';
 import 'troca_disponivel.dart';
 import 'missa_cadastrada.dart';
+import 'coroinha.dart';
+import 'escalado_na_missa.dart';
+import 'pendencia_em_atraso.dart';
 
 /// Em que ponto do caminho de acesso a pessoa está.
 ///  - semLogin:  ainda não entrou com o Google;
@@ -93,4 +96,22 @@ abstract class EscalaRepository {
   /// (Administrador) Remove uma missa. Se ainda houver coroinhas escalados,
   /// chega [MissaComEscalados].
   Future<void> removerMissa(String missaId);
+
+  /// (Administrador) Coroinhas ativos disponíveis para novas escalações.
+  Future<List<Coroinha>> coroinhas();
+
+  /// (Administrador) Escalações de uma missa, com nome e função.
+  Future<List<EscaladoNaMissa>> escaladosDaMissa(String missaId);
+
+  /// (Administrador) Inclui um coroinha na missa. O banco valida conflitos.
+  Future<void> escalar({
+    required String missaId,
+    required String coroinhaId,
+    required String funcao,
+  });
+
+  /// (Administrador) Retira uma escalação. O banco bloqueia missa iniciada.
+  Future<void> desescalar(String escalacaoId);
+
+  Future<List<PendenciaEmAtraso>> pendenciasEmAtraso();
 }

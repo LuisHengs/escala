@@ -54,4 +54,15 @@ void main() {
 
     expect(find.text('Nenhuma missa futura cadastrada.'), findsOneWidget);
   });
+
+  testWidgets('AD5: tocar em Pendências em atraso abre a nova tela', (t) async {
+    await montar(t);
+
+    expect(find.text('Pendências em atraso'), findsOneWidget);
+
+    await t.tap(find.text('Pendências em atraso'));
+    await t.pumpAndSettle();
+
+    expect(find.text('Nenhuma pendência em atraso.'), findsOneWidget);
+  });
 }
