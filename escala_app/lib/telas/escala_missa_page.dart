@@ -29,8 +29,13 @@ class _EscalaMissaPageState extends State<EscalaMissaPage> {
   final Set<String> _ocupadas = {};
 
   void _recarregar() {
+    final futuro = widget.repositorio.escaladosDaMissa(widget.missa.id);
+    // O erro aparece na própria tela, pelo FutureBuilder. Sem o ignore(), uma
+    // falha que chega antes de a tela começar a ouvir seria tratada como erro
+    // não capturado.
+    futuro.ignore();
     setState(() {
-      _escalados = widget.repositorio.escaladosDaMissa(widget.missa.id);
+      _escalados = futuro;
     });
   }
 

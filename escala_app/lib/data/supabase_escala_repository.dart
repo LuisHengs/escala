@@ -215,11 +215,10 @@ class SupabaseEscalaRepository implements EscalaRepository {
 
   @override
   Future<List<Coroinha>> coroinhas() async {
-    // Só pessoas ativas com papel de coroinha podem ser escaladas.
+    // Qualquer pessoa ativa pode ser escalada (coroinha ou administrador).
     final linhas = await _client
         .from('perfis')
         .select('id, nome')
-        .eq('papel', 'coroinha')
         .eq('ativo', true);
     return Coroinha.listaDeJson(linhas);
   }
