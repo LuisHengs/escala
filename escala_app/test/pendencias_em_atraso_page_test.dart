@@ -113,4 +113,23 @@ void main() {
     expect(find.text('João da Silva'), findsOneWidget);
     expect(repo.cargasPendenciasEmAtraso, 2);
   });
+
+  testWidgets(
+    'PA6: [guarda] se a atualização falhar de imediato, mostra a falha de carga',
+    (t) async {
+      repo.pendenciasCadastradas = [criarPendencia()];
+      await montar(t);
+      expect(find.text('João da Silva'), findsOneWidget);
+
+      repo.erroAoCarregarPendenciasEmAtraso = Exception('sem sinal');
+      await t.tap(find.byTooltip('Atualizar'));
+      await t.pumpAndSettle();
+
+      expect(
+        find.text('Não foi possível carregar as pendências.'),
+        findsOneWidget,
+      );
+      expect(repo.cargasPendenciasEmAtraso, 2);
+    },
+  );
 }

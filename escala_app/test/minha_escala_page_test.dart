@@ -452,6 +452,24 @@ void main() {
     expect(repo.cargas, 1);
   });
 
+  testWidgets('P35: [guarda] se só a recarga falhar, mostra a falha de carga', (
+    t,
+  ) async {
+    repo.escala = [item(id: 'e1')];
+    repo.aoConfirmar = (_) => repo.erroAoCarregar = Exception('sem sinal');
+    await montar(t);
+
+    await t.tap(find.text('Confirmar presença'));
+    await t.pumpAndSettle();
+
+    expect(repo.confirmacoes, ['e1']); // confirmou, uma única vez
+    expect(
+      find.text('Não foi possível carregar a sua escala.'),
+      findsOneWidget,
+    );
+    expect(find.text('Algo deu errado. Tente de novo.'), findsNothing);
+  });
+
   // ---------- área do administrador ----------
 
   testWidgets('P24: o administrador vê o botão Administração', (t) async {

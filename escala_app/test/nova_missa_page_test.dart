@@ -131,8 +131,9 @@ void main() {
 
       await salvar(t);
 
-      expect(repo.missasCriadas,
-          [(inicio: domingo1800, localId: 'l2', escalaLivre: false)]);
+      expect(repo.missasCriadas, [
+        (inicio: domingo1800, localId: 'l2', escalaLivre: false),
+      ]);
       expect(resultado, isTrue);
       expect(find.text('Nova missa'), findsNothing);
     },
@@ -319,17 +320,23 @@ void main() {
 
     expect(recebidos, [null, domingo1800]);
   });
-  testWidgets('NM15: o administrador pode ligar a escala livre ao criar',
-      (t) async {
-    await t.pumpWidget(MaterialApp(
-      home: NovaMissaPage(
-        repositorio: repo,
-        escolherDataHora: (_, _) async => domingo1800,
+  testWidgets('NM15: o administrador pode ligar a escala livre ao criar', (
+    t,
+  ) async {
+    await t.pumpWidget(
+      MaterialApp(
+        home: NovaMissaPage(
+          repositorio: repo,
+          escolherDataHora: (_, _) async => domingo1800,
+        ),
       ),
-    ));
+    );
     await t.pumpAndSettle();
     expect(find.text('Escala livre'), findsOneWidget);
-    expect(t.widget<SwitchListTile>(find.byType(SwitchListTile)).value, isFalse);
+    expect(
+      t.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+      isFalse,
+    );
 
     await t.tap(find.byType(DropdownButtonFormField<String>));
     await t.pumpAndSettle();
@@ -342,40 +349,47 @@ void main() {
     await t.tap(find.text('Salvar missa'));
     await t.pumpAndSettle();
 
-    expect(repo.missasCriadas,
-        [(inicio: domingo1800, localId: 'l1', escalaLivre: true)]);
+    expect(repo.missasCriadas, [
+      (inicio: domingo1800, localId: 'l1', escalaLivre: true),
+    ]);
   });
 
   testWidgets(
-      'NM16: ao editar, a chave começa como a missa está e vai ao salvar',
-      (t) async {
-    await t.pumpWidget(MaterialApp(
-      home: NovaMissaPage(
-        repositorio: repo,
-        missa: MissaCadastrada(
-          id: 'm1',
+    'NM16: ao editar, a chave começa como a missa está e vai ao salvar',
+    (t) async {
+      await t.pumpWidget(
+        MaterialApp(
+          home: NovaMissaPage(
+            repositorio: repo,
+            missa: MissaCadastrada(
+              id: 'm1',
+              inicio: DateTime(2026, 11, 22, 18, 0),
+              localId: 'l1',
+              localNome: 'Matriz',
+              escalaLivre: true,
+            ),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(
+        t.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        isTrue,
+      );
+
+      await t.tap(find.byType(SwitchListTile)); // desliga
+      await t.pumpAndSettle();
+      await t.tap(find.text('Salvar alterações'));
+      await t.pumpAndSettle();
+
+      expect(repo.missasEditadas, [
+        (
+          missaId: 'm1',
           inicio: DateTime(2026, 11, 22, 18, 0),
           localId: 'l1',
-          localNome: 'Matriz',
-          escalaLivre: true,
+          escalaLivre: false,
         ),
-      ),
-    ));
-    await t.pumpAndSettle();
-    expect(t.widget<SwitchListTile>(find.byType(SwitchListTile)).value, isTrue);
-
-    await t.tap(find.byType(SwitchListTile)); // desliga
-    await t.pumpAndSettle();
-    await t.tap(find.text('Salvar alterações'));
-    await t.pumpAndSettle();
-
-    expect(repo.missasEditadas, [
-      (
-        missaId: 'm1',
-        inicio: DateTime(2026, 11, 22, 18, 0),
-        localId: 'l1',
-        escalaLivre: false,
-      ),
-    ]);
-  });
+      ]);
+    },
+  );
 }

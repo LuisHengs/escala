@@ -29,10 +29,12 @@ void main() {
 
   /// Abre o menu da linha da pessoa [nome].
   Future<void> abrirMenu(WidgetTester t, String nome) async {
-    await t.tap(find.descendant(
-      of: find.widgetWithText(ListTile, nome),
-      matching: find.byIcon(Icons.more_vert),
-    ));
+    await t.tap(
+      find.descendant(
+        of: find.widgetWithText(ListTile, nome),
+        matching: find.byIcon(Icons.more_vert),
+      ),
+    );
     await t.pumpAndSettle();
   }
 
@@ -63,8 +65,9 @@ void main() {
     expect(find.text('Nenhuma pessoa cadastrada.'), findsOneWidget);
   });
 
-  testWidgets('PG3: enquanto carrega, mostra um indicador de progresso',
-      (t) async {
+  testWidgets('PG3: enquanto carrega, mostra um indicador de progresso', (
+    t,
+  ) async {
     repo.travarCargaPessoas = Completer<void>();
     await t.pumpWidget(MaterialApp(home: PessoasPage(repositorio: repo)));
     await t.pump();
@@ -75,8 +78,9 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
-  testWidgets('PG4: falha ao carregar avisa e permite tentar de novo',
-      (t) async {
+  testWidgets('PG4: falha ao carregar avisa e permite tentar de novo', (
+    t,
+  ) async {
     repo.erroAoCarregarPessoas = Exception('sem rede');
     await montar(t);
     expect(find.text('Não foi possível carregar as pessoas.'), findsOneWidget);
@@ -92,55 +96,64 @@ void main() {
 
   // ---------- o menu de cada pessoa ----------
 
-  testWidgets('PG5: pessoa ativa e coroinha: Desativar e Tornar administrador',
-      (t) async {
-    repo.pessoasCadastradas = [ana];
-    await montar(t);
+  testWidgets(
+    'PG5: pessoa ativa e coroinha: Desativar e Tornar administrador',
+    (t) async {
+      repo.pessoasCadastradas = [ana];
+      await montar(t);
 
-    await abrirMenu(t, 'Ana');
+      await abrirMenu(t, 'Ana');
 
-    expect(find.text('Desativar'), findsOneWidget);
-    expect(find.text('Tornar administrador'), findsOneWidget);
-    expect(find.text('Ativar'), findsNothing);
-    expect(find.text('Tornar coroinha'), findsNothing);
-  });
+      expect(find.text('Desativar'), findsOneWidget);
+      expect(find.text('Tornar administrador'), findsOneWidget);
+      expect(find.text('Ativar'), findsNothing);
+      expect(find.text('Tornar coroinha'), findsNothing);
+    },
+  );
 
-  testWidgets('PG6: pessoa inativa e administradora: Ativar e Tornar coroinha',
-      (t) async {
-    repo.pessoasCadastradas = [dora];
-    await montar(t);
+  testWidgets(
+    'PG6: pessoa inativa e administradora: Ativar e Tornar coroinha',
+    (t) async {
+      repo.pessoasCadastradas = [dora];
+      await montar(t);
 
-    await abrirMenu(t, 'Dora');
+      await abrirMenu(t, 'Dora');
 
-    expect(find.text('Ativar'), findsOneWidget);
-    expect(find.text('Tornar coroinha'), findsOneWidget);
-    expect(find.text('Desativar'), findsNothing);
-    expect(find.text('Tornar administrador'), findsNothing);
-  });
+      expect(find.text('Ativar'), findsOneWidget);
+      expect(find.text('Tornar coroinha'), findsOneWidget);
+      expect(find.text('Desativar'), findsNothing);
+      expect(find.text('Tornar administrador'), findsNothing);
+    },
+  );
 
   // ---------- desativar e ativar ----------
 
-  testWidgets('PG7: Desativar pede confirmação com o nome e ainda não desativa',
-      (t) async {
-    repo.pessoasCadastradas = [ana];
-    await montar(t);
+  testWidgets(
+    'PG7: Desativar pede confirmação com o nome e ainda não desativa',
+    (t) async {
+      repo.pessoasCadastradas = [ana];
+      await montar(t);
 
-    await escolherAcao(t, 'Ana', 'Desativar');
+      await escolherAcao(t, 'Ana', 'Desativar');
 
-    expect(find.text('Desativar pessoa?'), findsOneWidget);
-    expect(find.textContaining('Ana não poderá mais entrar no app'),
-        findsOneWidget);
-    expect(noDialogo(find.text('Desativar')), findsOneWidget);
-    expect(noDialogo(find.text('Cancelar')), findsOneWidget);
-    expect(repo.ativosDefinidos, isEmpty);
-  });
+      expect(find.text('Desativar pessoa?'), findsOneWidget);
+      expect(
+        find.textContaining('Ana não poderá mais entrar no app'),
+        findsOneWidget,
+      );
+      expect(noDialogo(find.text('Desativar')), findsOneWidget);
+      expect(noDialogo(find.text('Cancelar')), findsOneWidget);
+      expect(repo.ativosDefinidos, isEmpty);
+    },
+  );
 
-  testWidgets('PG8: confirmar desativa a pessoa e recarrega a lista',
-      (t) async {
+  testWidgets('PG8: confirmar desativa a pessoa e recarrega a lista', (
+    t,
+  ) async {
     repo.pessoasCadastradas = [ana];
     repo.aoDefinirAtivo = (id, ativo) => repo.pessoasCadastradas = [
-          const Pessoa(id: 'p1', nome: 'Ana', papel: 'coroinha', ativo: false),
-        ];
+      const Pessoa(id: 'p1', nome: 'Ana', papel: 'coroinha', ativo: false),
+    ];
     await montar(t);
     await escolherAcao(t, 'Ana', 'Desativar');
 
@@ -165,8 +178,9 @@ void main() {
     expect(find.text('Desativar pessoa?'), findsNothing);
   });
 
-  testWidgets('PG10: Ativar age direto, sem confirmação, e recarrega',
-      (t) async {
+  testWidgets('PG10: Ativar age direto, sem confirmação, e recarrega', (
+    t,
+  ) async {
     repo.pessoasCadastradas = [caio];
     await montar(t);
 
@@ -179,8 +193,9 @@ void main() {
 
   // ---------- mudar o papel ----------
 
-  testWidgets('PG11: Tornar administrador pede confirmação e então muda',
-      (t) async {
+  testWidgets('PG11: Tornar administrador pede confirmação e então muda', (
+    t,
+  ) async {
     repo.pessoasCadastradas = [ana];
     await montar(t);
 
@@ -196,8 +211,7 @@ void main() {
     expect(repo.cargasPessoas, 2);
   });
 
-  testWidgets('PG12: Tornar coroinha pede confirmação e então muda',
-      (t) async {
+  testWidgets('PG12: Tornar coroinha pede confirmação e então muda', (t) async {
     repo.pessoasCadastradas = [bia];
     await montar(t);
 
@@ -224,11 +238,13 @@ void main() {
 
   // ---------- erros ----------
 
-  testWidgets('PG14: pessoa com missas futuras mostra a mensagem do banco',
-      (t) async {
+  testWidgets('PG14: pessoa com missas futuras mostra a mensagem do banco', (
+    t,
+  ) async {
     repo.pessoasCadastradas = [ana];
     repo.erroAoDefinirAtivo = const TemEscalacoesFuturas(
-        'Essa pessoa tem missas futuras. Retire-a da escala antes.');
+      'Essa pessoa tem missas futuras. Retire-a da escala antes.',
+    );
     await montar(t);
     await escolherAcao(t, 'Ana', 'Desativar');
 
@@ -243,11 +259,13 @@ void main() {
     expect(repo.cargasPessoas, 1);
   });
 
-  testWidgets('PG15: o último administrador não pode virar coroinha',
-      (t) async {
+  testWidgets('PG15: o último administrador não pode virar coroinha', (
+    t,
+  ) async {
     repo.pessoasCadastradas = [bia];
     repo.erroAoDefinirPapel = const UltimoAdmin(
-        'O sistema precisa de pelo menos um administrador ativo.');
+      'O sistema precisa de pelo menos um administrador ativo.',
+    );
     await montar(t);
     await escolherAcao(t, 'Bia', 'Tornar coroinha');
 
@@ -273,17 +291,21 @@ void main() {
   });
 
   testWidgets(
-      'PG17: se só o recarregamento falhar, não diz que a ação falhou',
-      (t) async {
-    repo.pessoasCadastradas = [caio];
-    await montar(t);
-    repo.aoDefinirAtivo =
-        (id, ativo) => repo.erroAoCarregarPessoas = Exception('sem rede');
+    'PG17: se só o recarregamento falhar, não diz que a ação falhou',
+    (t) async {
+      repo.pessoasCadastradas = [caio];
+      await montar(t);
+      repo.aoDefinirAtivo = (id, ativo) =>
+          repo.erroAoCarregarPessoas = Exception('sem rede');
 
-    await escolherAcao(t, 'Caio', 'Ativar');
+      await escolherAcao(t, 'Caio', 'Ativar');
 
-    expect(repo.ativosDefinidos, [(pessoaId: 'p3', ativo: true)]);
-    expect(find.text('Algo deu errado. Tente de novo.'), findsNothing);
-    expect(find.text('Não foi possível carregar as pessoas.'), findsOneWidget);
-  });
+      expect(repo.ativosDefinidos, [(pessoaId: 'p3', ativo: true)]);
+      expect(find.text('Algo deu errado. Tente de novo.'), findsNothing);
+      expect(
+        find.text('Não foi possível carregar as pessoas.'),
+        findsOneWidget,
+      );
+    },
+  );
 }

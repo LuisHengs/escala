@@ -1,10 +1,10 @@
-import 'package:escala_core/escala_core.dart';
 import 'package:flutter/material.dart';
 
 import '../data/escala_repository.dart';
 import '../data/local.dart';
 import '../data/missa_cadastrada.dart';
 import '../formatacao.dart';
+import '../mensagem_de_erro.dart';
 
 /// Como a tela pergunta a data e a hora. [atual] é o horário já escolhido (o
 /// da missa, ao editar), para o seletor abrir nele; nulo se ainda não há.
@@ -128,9 +128,7 @@ class _NovaMissaPageState extends State<NovaMissaPage> {
       if (!mounted) return;
       setState(() {
         // Erros de regra têm mensagem própria; o resto vira um texto genérico.
-        _mensagem = e is RegraDeNegocio
-            ? e.mensagem
-            : 'Algo deu errado. Tente de novo.';
+        _mensagem = mensagemDoErro(e);
       });
     } finally {
       if (mounted) setState(() => _salvando = false);

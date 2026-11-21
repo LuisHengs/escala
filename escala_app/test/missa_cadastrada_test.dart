@@ -47,9 +47,14 @@ void main() {
   });
 
   test('MC4: lê se a escala é livre', () {
-    expect(MissaCadastrada.deJson(linha(escalaLivre: true)).escalaLivre, isTrue);
     expect(
-        MissaCadastrada.deJson(linha(escalaLivre: false)).escalaLivre, isFalse);
+      MissaCadastrada.deJson(linha(escalaLivre: true)).escalaLivre,
+      isTrue,
+    );
+    expect(
+      MissaCadastrada.deJson(linha(escalaLivre: false)).escalaLivre,
+      isFalse,
+    );
   });
 
   test('MC5: sem o campo na linha, a escala não é livre', () {

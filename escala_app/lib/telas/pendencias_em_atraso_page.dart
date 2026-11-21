@@ -19,8 +19,11 @@ class _PendenciasEmAtrasoPageState extends State<PendenciasEmAtrasoPage> {
       .pendenciasEmAtraso();
 
   void _recarregar() {
+    final futuro = widget.repositorio.pendenciasEmAtraso();
+    // O erro aparece na própria tela, pelo FutureBuilder (lição 14).
+    futuro.ignore();
     setState(() {
-      _pendencias = widget.repositorio.pendenciasEmAtraso();
+      _pendencias = futuro;
     });
   }
 

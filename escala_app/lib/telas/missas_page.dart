@@ -5,8 +5,7 @@ import '../data/escala_repository.dart';
 import '../data/missa_cadastrada.dart';
 import 'nova_missa_page.dart';
 import 'escala_missa_page.dart';
-
-import 'package:escala_core/escala_core.dart';
+import '../mensagem_de_erro.dart';
 
 /// (Administrador) As próximas missas cadastradas, com o horário e o local.
 class MissasPage extends StatefulWidget {
@@ -107,15 +106,8 @@ class _MissasPageState extends State<MissasPage> {
       deuCerto = true;
     } on Object catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            e is RegraDeNegocio
-                ? e.mensagem
-                : 'Algo deu errado. Tente de novo.',
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(mensagemDoErro(e))));
     } finally {
       _ocupado = false;
     }
@@ -168,9 +160,11 @@ class _MissasPageState extends State<MissasPage> {
                 ListTile(
                   leading: const Icon(Icons.event_outlined),
                   title: Text(formatarDataMissa(missa.inicio)),
-                  subtitle: Text(missa.escalaLivre
-                      ? '${missa.localNome} · Escala livre'
-                      : missa.localNome),
+                  subtitle: Text(
+                    missa.escalaLivre
+                        ? '${missa.localNome} · Escala livre'
+                        : missa.localNome,
+                  ),
                   onTap: () => _abrirEscala(missa),
                   trailing: PopupMenuButton<String>(
                     tooltip: 'Ações da missa',

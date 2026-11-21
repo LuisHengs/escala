@@ -343,23 +343,25 @@ void main() {
     expect(find.text('Matriz'), findsOneWidget); // a missa que não é livre
   });
 
-  testWidgets('MP18: editar uma missa livre sem mexer na chave mantém a chave',
-      (t) async {
-    repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
-    repo.missasCadastradas = [missaLivre];
-    await t.pumpWidget(MaterialApp(home: MissasPage(repositorio: repo)));
-    await t.pumpAndSettle();
-    await abrirEdicao(t);
+  testWidgets(
+    'MP18: editar uma missa livre sem mexer na chave mantém a chave',
+    (t) async {
+      repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+      repo.missasCadastradas = [missaLivre];
+      await t.pumpWidget(MaterialApp(home: MissasPage(repositorio: repo)));
+      await t.pumpAndSettle();
+      await abrirEdicao(t);
 
-    await salvarEdicao(t);
+      await salvarEdicao(t);
 
-    expect(repo.missasEditadas, [
-      (
-        missaId: 'm2',
-        inicio: DateTime(2026, 11, 29, 18, 0),
-        localId: 'l1',
-        escalaLivre: true,
-      ),
-    ]);
-  });
+      expect(repo.missasEditadas, [
+        (
+          missaId: 'm2',
+          inicio: DateTime(2026, 11, 29, 18, 0),
+          localId: 'l1',
+          escalaLivre: true,
+        ),
+      ]);
+    },
+  );
 }

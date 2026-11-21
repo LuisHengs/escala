@@ -41,6 +41,9 @@ class SupabaseEscalaRepository implements EscalaRepository {
     }
   }
 
+  @override
+  Future<void> verificarAcessoDeNovo() => _atualizar();
+
   Future<EstadoAcesso> _calcular() async {
     if (_client.auth.currentSession == null) return EstadoAcesso.semLogin;
     // eh_membro() e eh_admin() são as mesmas funções que as políticas de
@@ -267,8 +270,9 @@ class SupabaseEscalaRepository implements EscalaRepository {
   @override
   Future<List<Pessoa>> pessoas() async {
     // A RLS deixa qualquer membro ler os perfis.
-    final linhas =
-        await _client.from('perfis').select('id, nome, papel, ativo');
+    final linhas = await _client
+        .from('perfis')
+        .select('id, nome, papel, ativo');
     return Pessoa.listaDeJson(linhas);
   }
 
@@ -299,16 +303,18 @@ class SupabaseEscalaRepository implements EscalaRepository {
     final meuId = _client.auth.currentUser!.id;
     final linhas = await _client
         .from('missas')
-        .select('id, inicio, local_id, escala_livre, locais(nome), '
-            'escalacoes(coroinha_id)')
+        .select(
+          'id, inicio, local_id, escala_livre, locais(nome), '
+          'escalacoes(coroinha_id)',
+        )
         .eq('escala_livre', true)
         .gte('inicio', DateTime.now().toUtc().toIso8601String());
     // Tira as missas em que eu já estou escalado.
     final abertas = linhas.where((linha) {
       final escalados = (linha['escalacoes'] as List<dynamic>?) ?? const [];
-      return !escalados
-          .cast<Map<String, dynamic>>()
-          .any((e) => e['coroinha_id'] == meuId);
+      return !escalados.cast<Map<String, dynamic>>().any(
+        (e) => e['coroinha_id'] == meuId,
+      );
     }).toList();
     return MissaCadastrada.listaDeJson(abertas);
   }

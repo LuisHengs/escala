@@ -18,15 +18,14 @@ class Pessoa {
 
   /// Lê uma linha da tabela `perfis`.
   factory Pessoa.deJson(Map<String, dynamic> json) => Pessoa(
-        id: json['id'] as String,
-        nome: json['nome'] as String,
-        papel: json['papel'] as String,
-        ativo: json['ativo'] as bool,
-      );
+    id: json['id'] as String,
+    nome: json['nome'] as String,
+    papel: json['papel'] as String,
+    ativo: json['ativo'] as bool,
+  );
 
   /// A lista inteira, em ordem alfabética (sem diferenciar maiúsculas).
-  static List<Pessoa> listaDeJson(List<dynamic> linhas) => linhas
-      .map((l) => Pessoa.deJson(l as Map<String, dynamic>))
-      .toList()
-    ..sort((a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()));
+  static List<Pessoa> listaDeJson(List<dynamic> linhas) =>
+      linhas.map((l) => Pessoa.deJson(l as Map<String, dynamic>)).toList()
+        ..sort((a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()));
 }

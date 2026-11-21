@@ -27,7 +27,10 @@ class _RaizState extends State<Raiz> {
       stream: _estado,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const _Mensagem('Não foi possível verificar o seu acesso.');
+          return _Mensagem(
+            'Não foi possível verificar o seu acesso.',
+            onTentarDeNovo: widget.repositorio.verificarAcessoDeNovo,
+          );
         }
         if (!snapshot.hasData) {
           return const Scaffold(
@@ -54,15 +57,26 @@ class _RaizState extends State<Raiz> {
 
 class _Mensagem extends StatelessWidget {
   final String texto;
+  final Future<void> Function() onTentarDeNovo;
 
-  const _Mensagem(this.texto);
+  const _Mensagem(this.texto, {required this.onTentarDeNovo});
 
   @override
   Widget build(BuildContext context) => Scaffold(
     body: Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: Text(texto, textAlign: TextAlign.center),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(texto, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: onTentarDeNovo,
+              child: const Text('Tentar de novo'),
+            ),
+          ],
+        ),
       ),
     ),
   );

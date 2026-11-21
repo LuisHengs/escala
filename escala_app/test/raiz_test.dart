@@ -121,4 +121,42 @@ void main() {
     expect(find.text('Minha escala'), findsOneWidget);
     expect(find.text('Código do convite'), findsNothing);
   });
+
+  testWidgets('R12: falha ao verificar o acesso oferece Tentar de novo', (
+    t,
+  ) async {
+    await montar(t);
+    repo.emitirErro(Exception('falha de rede'));
+    await t.pump();
+
+    expect(find.text('Tentar de novo'), findsOneWidget);
+  });
+
+  testWidgets('R13: Tentar de novo pede ao repositório para verificar', (
+    t,
+  ) async {
+    await montar(t);
+    repo.emitirErro(Exception('falha de rede'));
+    await t.pump();
+
+    await t.tap(find.text('Tentar de novo'));
+    await t.pump();
+
+    expect(repo.reverificacoes, 1);
+  });
+
+  testWidgets('R14: se a nova verificação der certo, a tela sai do erro', (
+    t,
+  ) async {
+    repo.aoReverificar = () => repo.emitir(EstadoAcesso.membro);
+    await montar(t);
+    repo.emitirErro(Exception('falha de rede'));
+    await t.pump();
+
+    await t.tap(find.text('Tentar de novo'));
+    await t.pump();
+
+    expect(find.text('Minha escala'), findsOneWidget);
+    expect(find.text('Não foi possível verificar o seu acesso.'), findsNothing);
+  });
 }

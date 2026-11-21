@@ -38,7 +38,7 @@ void main() {
     'TEM_ESCALACOES_FUTURAS': isA<TemEscalacoesFuturas>(),
     'MISSA_COM_ESCALADOS': isA<MissaComEscalados>(),
     'ULTIMO_ADMIN': isA<UltimoAdmin>(),
-        // Escala livre
+    // Escala livre
     'ESCALA_NAO_LIVRE': isA<EscalaNaoLivre>(),
     'SAIDA_NAO_PERMITIDA': isA<SaidaNaoPermitida>(),
   };

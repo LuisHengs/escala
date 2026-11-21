@@ -1,8 +1,8 @@
-import 'package:escala_core/escala_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../data/escala_repository.dart';
+import '../mensagem_de_erro.dart';
 
 /// Copia o texto para a área de transferência do aparelho.
 Future<void> _copiarParaAreaDeTransferencia(String texto) =>
@@ -57,9 +57,7 @@ class _ConvitesPageState extends State<ConvitesPage> {
         // O código antigo some: a mensagem de erro não pode parecer ser dele.
         _codigo = null;
         // Erros de regra têm mensagem própria; o resto vira um texto genérico.
-        _mensagem = e is RegraDeNegocio
-            ? e.mensagem
-            : 'Algo deu errado. Tente de novo.';
+        _mensagem = mensagemDoErro(e);
       });
     } finally {
       if (mounted) setState(() => _gerando = false);

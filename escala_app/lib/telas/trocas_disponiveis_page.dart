@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../data/escala_repository.dart';
 import '../data/troca_disponivel.dart';
 import '../formatacao.dart';
+import '../mensagem_de_erro.dart';
 
 /// Os pedidos de troca de outras pessoas, com o botão de aceitar.
 class TrocasDisponiveisPage extends StatefulWidget {
@@ -23,10 +24,15 @@ class _TrocasDisponiveisPageState extends State<TrocasDisponiveisPage> {
   final _ocupadas = <String>{};
 
   void _recarregar() {
+    final futuro = widget.repositorio.trocasDisponiveis();
+    // O erro aparece na própria tela, pelo FutureBuilder. Sem o ignore(), uma
+    // falha que chega ANTES de a tela começar a ouvir seria tratada como erro
+    // não capturado. O FutureBuilder continua recebendo o erro normalmente.
+    futuro.ignore();
     // Bloco, e não "=>": a seta devolveria o Future atribuído, e o
     // setState exige um callback que não devolva Future.
     setState(() {
-      _trocas = widget.repositorio.trocasDisponiveis();
+      _trocas = futuro;
     });
   }
 
@@ -54,7 +60,7 @@ class _TrocasDisponiveisPageState extends State<TrocasDisponiveisPage> {
       'Esta troca já foi aceita por outra pessoa ou foi cancelada.',
     MissaJaComecou() => 'Esta missa já começou.',
     RegraDeNegocio(:final mensagem) => mensagem,
-    _ => 'Algo deu errado. Tente de novo.',
+    _ => mensagemGenerica,
   };
 
   Future<void> _aceitar(TrocaDisponivel troca) async {

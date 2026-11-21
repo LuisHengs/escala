@@ -1,8 +1,8 @@
-import 'package:escala_core/escala_core.dart';
 import 'package:flutter/material.dart';
 
 import '../data/escala_repository.dart';
 import '../data/local.dart';
+import '../mensagem_de_erro.dart';
 
 /// (Administrador) Lista as igrejas e capelas e cadastra uma nova.
 class LocaisPage extends StatefulWidget {
@@ -57,9 +57,7 @@ class _LocaisPageState extends State<LocaisPage> {
       if (!mounted) return;
       setState(() {
         // Erros de regra têm mensagem própria; o resto vira um texto genérico.
-        _mensagem = e is RegraDeNegocio
-            ? e.mensagem
-            : 'Algo deu errado. Tente de novo.';
+        _mensagem = mensagemDoErro(e);
       });
     } finally {
       if (mounted) setState(() => _salvando = false);

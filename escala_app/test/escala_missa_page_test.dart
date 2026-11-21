@@ -38,7 +38,9 @@ void main() {
 
   Future<void> montar(WidgetTester t) async {
     await t.pumpWidget(
-      MaterialApp(home: EscalaMissaPage(repositorio: repo, missa: missa)),
+      MaterialApp(
+        home: EscalaMissaPage(repositorio: repo, missa: missa),
+      ),
     );
     await t.pumpAndSettle();
   }
@@ -53,7 +55,9 @@ void main() {
 
   // ---------- lista ----------
 
-  testWidgets('EQ1: mostra a missa, quem está escalado e a contagem', (t) async {
+  testWidgets('EQ1: mostra a missa, quem está escalado e a contagem', (
+    t,
+  ) async {
     repo.escaladosPorMissa['m1'] = [ana, bruno];
     await montar(t);
 
@@ -74,24 +78,30 @@ void main() {
     expect(find.text('0 participantes'), findsOneWidget);
   });
 
-  testWidgets('EQ3: enquanto carrega, mostra um indicador de progresso',
-      (t) async {
+  testWidgets('EQ3: enquanto carrega, mostra um indicador de progresso', (
+    t,
+  ) async {
     // Sem travar a carga (o fake não tem esse recurso para escalados): o
     // indicador aparece no primeiro quadro, antes de a lista chegar.
     await t.pumpWidget(
-      MaterialApp(home: EscalaMissaPage(repositorio: repo, missa: missa)),
+      MaterialApp(
+        home: EscalaMissaPage(repositorio: repo, missa: missa),
+      ),
     );
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await t.pumpAndSettle();
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
-  testWidgets('EQ4: falha ao carregar avisa e permite tentar de novo',
-      (t) async {
+  testWidgets('EQ4: falha ao carregar avisa e permite tentar de novo', (
+    t,
+  ) async {
     repo.erroAoCarregarEscalados = Exception('sem rede');
     await montar(t);
-    expect(find.text('Não foi possível carregar os escalados.'),
-        findsOneWidget);
+    expect(
+      find.text('Não foi possível carregar os escalados.'),
+      findsOneWidget,
+    );
     expect(find.textContaining('sem rede'), findsNothing);
 
     repo.erroAoCarregarEscalados = null;
@@ -104,8 +114,9 @@ void main() {
 
   // ---------- retirar da escala ----------
 
-  testWidgets('EQ5: retirar pede confirmação com o nome e ainda não retira',
-      (t) async {
+  testWidgets('EQ5: retirar pede confirmação com o nome e ainda não retira', (
+    t,
+  ) async {
     repo.escaladosPorMissa['m1'] = [ana, bruno];
     await montar(t);
 
@@ -145,23 +156,26 @@ void main() {
     expect(repo.cargasEscaladosPorMissa['m1'], 1);
   });
 
-  testWidgets('EQ8: erro de regra ao retirar mostra a mensagem e mantém a lista',
-      (t) async {
-    repo.escaladosPorMissa['m1'] = [ana];
-    repo.erroAoDesescalar = const MissaJaComecou('Esta missa já começou.');
-    await montar(t);
-    await pedirRetirada(t);
+  testWidgets(
+    'EQ8: erro de regra ao retirar mostra a mensagem e mantém a lista',
+    (t) async {
+      repo.escaladosPorMissa['m1'] = [ana];
+      repo.erroAoDesescalar = const MissaJaComecou('Esta missa já começou.');
+      await montar(t);
+      await pedirRetirada(t);
 
-    await t.tap(noDialogo(find.text('Remover')));
-    await t.pumpAndSettle();
+      await t.tap(noDialogo(find.text('Remover')));
+      await t.pumpAndSettle();
 
-    expect(find.text('Esta missa já começou.'), findsOneWidget);
-    expect(find.text('Ana'), findsOneWidget);
-    expect(repo.cargasEscaladosPorMissa['m1'], 1);
-  });
+      expect(find.text('Esta missa já começou.'), findsOneWidget);
+      expect(find.text('Ana'), findsOneWidget);
+      expect(repo.cargasEscaladosPorMissa['m1'], 1);
+    },
+  );
 
-  testWidgets('EQ9: erro inesperado ao retirar mostra mensagem genérica',
-      (t) async {
+  testWidgets('EQ9: erro inesperado ao retirar mostra mensagem genérica', (
+    t,
+  ) async {
     repo.escaladosPorMissa['m1'] = [ana];
     repo.erroAoDesescalar = Exception('SocketException: sem rede');
     await montar(t);
@@ -175,22 +189,25 @@ void main() {
   });
 
   testWidgets(
-      'EQ10: se só o recarregamento falhar, não diz que a retirada falhou',
-      (t) async {
-    repo.escaladosPorMissa['m1'] = [ana];
-    await montar(t);
-    repo.aoDesescalar =
-        (id) => repo.erroAoCarregarEscalados = Exception('sem rede');
-    await pedirRetirada(t);
+    'EQ10: se só o recarregamento falhar, não diz que a retirada falhou',
+    (t) async {
+      repo.escaladosPorMissa['m1'] = [ana];
+      await montar(t);
+      repo.aoDesescalar = (id) =>
+          repo.erroAoCarregarEscalados = Exception('sem rede');
+      await pedirRetirada(t);
 
-    await t.tap(noDialogo(find.text('Remover')));
-    await t.pumpAndSettle();
+      await t.tap(noDialogo(find.text('Remover')));
+      await t.pumpAndSettle();
 
-    expect(repo.escalacoesRemovidas, ['e1']);
-    expect(find.text('Algo deu errado. Tente de novo.'), findsNothing);
-    expect(find.text('Não foi possível carregar os escalados.'),
-        findsOneWidget);
-  });
+      expect(repo.escalacoesRemovidas, ['e1']);
+      expect(find.text('Algo deu errado. Tente de novo.'), findsNothing);
+      expect(
+        find.text('Não foi possível carregar os escalados.'),
+        findsOneWidget,
+      );
+    },
+  );
 
   // ---------- adicionar coroinha ----------
 
@@ -206,8 +223,9 @@ void main() {
     await t.pumpAndSettle();
   }
 
-  testWidgets('EQ11: adicionar manda missa, coroinha e função e recarrega',
-      (t) async {
+  testWidgets('EQ11: adicionar manda missa, coroinha e função e recarrega', (
+    t,
+  ) async {
     repo.coroinhasCadastrados = [
       const Coroinha(id: 'c1', nome: 'Ana'),
       const Coroinha(id: 'c3', nome: 'Carla'),
@@ -217,7 +235,11 @@ void main() {
         repo.escaladosPorMissa['m1'] = [
           ana,
           EscaladoNaMissa(
-              id: 'e3', coroinhaId: coroinhaId, nome: 'Carla', funcao: funcao),
+            id: 'e3',
+            coroinhaId: coroinhaId,
+            nome: 'Carla',
+            funcao: funcao,
+          ),
         ];
     await montar(t);
 
@@ -235,21 +257,25 @@ void main() {
     expect(find.text('cruciferário'), findsOneWidget);
   });
 
-  testWidgets('EQ12: sem coroinha disponível, avisa e não abre o diálogo',
-      (t) async {
+  testWidgets('EQ12: sem coroinha disponível, avisa e não abre o diálogo', (
+    t,
+  ) async {
     repo.coroinhasCadastrados = [const Coroinha(id: 'c1', nome: 'Ana')];
     repo.escaladosPorMissa['m1'] = [ana];
     await montar(t);
 
     await abrirAdicionar(t);
 
-    expect(find.text('Não há coroinhas disponíveis para adicionar.'),
-        findsOneWidget);
+    expect(
+      find.text('Não há coroinhas disponíveis para adicionar.'),
+      findsOneWidget,
+    );
     expect(find.byType(AlertDialog), findsNothing);
   });
 
-  testWidgets('EQ13: sem escolher coroinha e função, o diálogo cobra os dois',
-      (t) async {
+  testWidgets('EQ13: sem escolher coroinha e função, o diálogo cobra os dois', (
+    t,
+  ) async {
     repo.coroinhasCadastrados = [const Coroinha(id: 'c3', nome: 'Carla')];
     await montar(t);
 
@@ -262,11 +288,13 @@ void main() {
     expect(repo.escalacoesCriadas, isEmpty);
   });
 
-  testWidgets('EQ14: conflito de horário mostra a mensagem do banco',
-      (t) async {
+  testWidgets('EQ14: conflito de horário mostra a mensagem do banco', (
+    t,
+  ) async {
     repo.coroinhasCadastrados = [const Coroinha(id: 'c3', nome: 'Carla')];
     repo.erroAoEscalar = const ConflitoDeHorario(
-        'Esse coroinha já está escalado em uma missa com horário próximo.');
+      'Esse coroinha já está escalado em uma missa com horário próximo.',
+    );
     await montar(t);
 
     await abrirAdicionar(t);
@@ -279,29 +307,36 @@ void main() {
 
     expect(
       find.text(
-          'Esse coroinha já está escalado em uma missa com horário próximo.'),
+        'Esse coroinha já está escalado em uma missa com horário próximo.',
+      ),
       findsOneWidget,
     );
-    expect(repo.cargasEscaladosPorMissa['m1'], cargasAoAbrir); // não recarregou // não recarregou
+    expect(
+      repo.cargasEscaladosPorMissa['m1'],
+      cargasAoAbrir,
+    ); // não recarregou // não recarregou
   });
 
-  testWidgets('EQ15: enquanto escala, o botão Adicionar coroinha fica bloqueado',
-      (t) async {
-    repo.coroinhasCadastrados = [const Coroinha(id: 'c3', nome: 'Carla')];
-    repo.travarEscalar = Completer<void>();
-    await montar(t);
+  testWidgets(
+    'EQ15: enquanto escala, o botão Adicionar coroinha fica bloqueado',
+    (t) async {
+      repo.coroinhasCadastrados = [const Coroinha(id: 'c3', nome: 'Carla')];
+      repo.travarEscalar = Completer<void>();
+      await montar(t);
 
-    await abrirAdicionar(t);
-    await escolherCoroinha(t, 'Carla');
-    await t.enterText(find.byType(TextFormField), 'turiferário');
-    await t.tap(noDialogo(find.text('Adicionar')));
-    await t.pump();
+      await abrirAdicionar(t);
+      await escolherCoroinha(t, 'Carla');
+      await t.enterText(find.byType(TextFormField), 'turiferário');
+      await t.tap(noDialogo(find.text('Adicionar')));
+      await t.pump();
 
-    final botao = t.widget<FloatingActionButton>(
-        find.byType(FloatingActionButton));
-    expect(botao.onPressed, isNull);
+      final botao = t.widget<FloatingActionButton>(
+        find.byType(FloatingActionButton),
+      );
+      expect(botao.onPressed, isNull);
 
-    repo.travarEscalar!.complete();
-    await t.pumpAndSettle();
-  });
+      repo.travarEscalar!.complete();
+      await t.pumpAndSettle();
+    },
+  );
 }

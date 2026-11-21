@@ -1,8 +1,8 @@
-import 'package:escala_core/escala_core.dart';
 import 'package:flutter/material.dart';
 
 import '../data/escala_repository.dart';
 import '../data/pessoa.dart';
+import '../mensagem_de_erro.dart';
 
 /// (Administrador) As pessoas cadastradas, com papel e situação. Cada uma tem
 /// um menu para ativar/desativar e para mudar o papel.
@@ -41,11 +41,8 @@ class _PessoasPageState extends State<PessoasPage> {
       deuCerto = true;
     } on Object catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(e is RegraDeNegocio
-            ? e.mensagem
-            : 'Algo deu errado. Tente de novo.'),
-      ));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(mensagemDoErro(e))));
     } finally {
       _ocupado = false;
     }
@@ -84,18 +81,25 @@ class _PessoasPageState extends State<PessoasPage> {
     switch (acao) {
       case 'ativar':
         // Se desfaz sozinho (dá para desativar de novo): sem confirmação.
-        await _executar(() => widget.repositorio
-            .definirAtivo(pessoaId: pessoa.id, ativo: true));
+        await _executar(
+          () =>
+              widget.repositorio.definirAtivo(pessoaId: pessoa.id, ativo: true),
+        );
       case 'desativar':
         final ok = await _confirmar(
           titulo: 'Desativar pessoa?',
-          texto: '${pessoa.nome} não poderá mais entrar no app. '
+          texto:
+              '${pessoa.nome} não poderá mais entrar no app. '
               'Dá para ativar de novo depois.',
           botao: 'Desativar',
         );
         if (!ok) return;
-        await _executar(() => widget.repositorio
-            .definirAtivo(pessoaId: pessoa.id, ativo: false));
+        await _executar(
+          () => widget.repositorio.definirAtivo(
+            pessoaId: pessoa.id,
+            ativo: false,
+          ),
+        );
       case 'admin' || 'coroinha':
         final ok = await _confirmar(
           titulo: 'Alterar papel?',
@@ -105,8 +109,10 @@ class _PessoasPageState extends State<PessoasPage> {
           botao: 'Alterar',
         );
         if (!ok) return;
-        await _executar(() => widget.repositorio
-            .definirPapel(pessoaId: pessoa.id, papel: acao));
+        await _executar(
+          () =>
+              widget.repositorio.definirPapel(pessoaId: pessoa.id, papel: acao),
+        );
     }
   }
 
@@ -155,16 +161,22 @@ class _PessoasPageState extends State<PessoasPage> {
                     itemBuilder: (_) => [
                       pessoa.ativo
                           ? const PopupMenuItem(
-                              value: 'desativar', child: Text('Desativar'))
+                              value: 'desativar',
+                              child: Text('Desativar'),
+                            )
                           : const PopupMenuItem(
-                              value: 'ativar', child: Text('Ativar')),
+                              value: 'ativar',
+                              child: Text('Ativar'),
+                            ),
                       pessoa.administrador
                           ? const PopupMenuItem(
                               value: 'coroinha',
-                              child: Text('Tornar coroinha'))
+                              child: Text('Tornar coroinha'),
+                            )
                           : const PopupMenuItem(
                               value: 'admin',
-                              child: Text('Tornar administrador')),
+                              child: Text('Tornar administrador'),
+                            ),
                     ],
                   ),
                 ),

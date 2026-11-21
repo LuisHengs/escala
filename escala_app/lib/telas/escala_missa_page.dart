@@ -1,4 +1,3 @@
-import 'package:escala_core/escala_core.dart' hide Coroinha;
 import 'package:flutter/material.dart';
 
 import '../data/coroinha.dart';
@@ -6,6 +5,7 @@ import '../data/escala_repository.dart';
 import '../data/escalado_na_missa.dart';
 import '../data/missa_cadastrada.dart';
 import '../formatacao.dart';
+import '../mensagem_de_erro.dart';
 
 /// Administração dos coroinhas escalados em uma missa específica.
 class EscalaMissaPage extends StatefulWidget {
@@ -42,15 +42,8 @@ class _EscalaMissaPageState extends State<EscalaMissaPage> {
   void _mostrarErro(Object erro) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          erro is RegraDeNegocio
-              ? erro.mensagem
-              : 'Algo deu errado. Tente de novo.',
-        ),
-      ),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(mensagemDoErro(erro))));
   }
 
   Future<void> _adicionar() async {

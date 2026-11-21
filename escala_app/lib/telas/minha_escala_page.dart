@@ -7,6 +7,7 @@ import '../formatacao.dart';
 import 'admin_page.dart';
 import 'trocas_disponiveis_page.dart';
 import 'missas_abertas_page.dart';
+import '../mensagem_de_erro.dart';
 
 /// As próximas missas de quem está logado, com a situação da presença, o
 /// botão de confirmar e o pedido de troca.
@@ -38,10 +39,15 @@ class _MinhaEscalaPageState extends State<MinhaEscalaPage> {
   final _ocupadas = <String>{};
 
   void _recarregar() {
+    final futuro = widget.repositorio.minhaEscala();
+    // O erro aparece na própria tela, pelo FutureBuilder. Sem o ignore(), uma
+    // falha que chega ANTES de a tela começar a ouvir seria tratada como erro
+    // não capturado. O FutureBuilder continua recebendo o erro normalmente.
+    futuro.ignore();
     // Bloco, e não "=>": a seta devolveria o Future atribuído, e o
     // setState exige um callback que não devolva Future.
     setState(() {
-      _escala = widget.repositorio.minhaEscala();
+      _escala = futuro;
     });
   }
 
@@ -70,15 +76,8 @@ class _MinhaEscalaPageState extends State<MinhaEscalaPage> {
     } on Object catch (e) {
       if (mounted) {
         // Erros de regra têm mensagem própria; o resto vira um texto genérico.
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e is RegraDeNegocio
-                  ? e.mensagem
-                  : 'Algo deu errado. Tente de novo.',
-            ),
-          ),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(mensagemDoErro(e))));
       }
     } finally {
       if (mounted) setState(() => _ocupadas.remove(escalacaoId));

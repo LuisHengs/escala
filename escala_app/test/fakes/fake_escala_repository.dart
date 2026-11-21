@@ -91,7 +91,7 @@ class FakeEscalaRepository implements EscalaRepository {
   // ---------- administração: criar missa ----------
 
   /// Cada missa criada (horário e id do local), na ordem.
-    final missasCriadas =
+  final missasCriadas =
       <({DateTime inicio, String localId, bool escalaLivre})>[];
 
   /// Se preenchido, criarMissa() lança este erro.
@@ -109,15 +109,18 @@ class FakeEscalaRepository implements EscalaRepository {
     required String localId,
     bool escalaLivre = false,
   }) async {
-    missasCriadas
-        .add((inicio: inicio, localId: localId, escalaLivre: escalaLivre));
+    missasCriadas.add((
+      inicio: inicio,
+      localId: localId,
+      escalaLivre: escalaLivre,
+    ));
     if (travarCriarMissa != null) await travarCriarMissa!.future;
     if (erroAoCriarMissa != null) throw erroAoCriarMissa!;
     aoCriarMissa?.call(inicio, localId);
   }
 
   // --- editar / remover missa ---
-    final missasEditadas =
+  final missasEditadas =
       <({String missaId, DateTime inicio, String localId, bool escalaLivre})>[];
   Object? erroAoEditarMissa;
   final missasRemovidas = <String>[];
@@ -365,6 +368,19 @@ class FakeEscalaRepository implements EscalaRepository {
 
   void emitir(EstadoAcesso estado) => _controle.add(estado);
   void emitirErro(Object erro) => _controle.addError(erro);
+
+  int reverificacoes = 0;
+
+  /// Roda quando a tela pede para verificar o acesso de novo (ex.: emitir o
+  /// estado "membro", como o banco faria se a rede voltou).
+  void Function()? aoReverificar;
+
+  @override
+  Future<void> verificarAcessoDeNovo() async {
+    reverificacoes++;
+    aoReverificar?.call();
+  }
+
   Future<void> fechar() => _controle.close();
 
   @override

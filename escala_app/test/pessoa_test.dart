@@ -7,8 +7,7 @@ Map<String, dynamic> linha({
   String nome = 'Ana',
   String papel = 'coroinha',
   bool ativo = true,
-}) =>
-    {'id': id, 'nome': nome, 'papel': papel, 'ativo': ativo};
+}) => {'id': id, 'nome': nome, 'papel': papel, 'ativo': ativo};
 
 void main() {
   test('PS1: lê o id, o nome, o papel e se está ativo', () {

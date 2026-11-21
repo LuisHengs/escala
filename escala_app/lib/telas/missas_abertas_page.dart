@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../data/escala_repository.dart';
 import '../data/missa_cadastrada.dart';
 import '../formatacao.dart';
+import '../mensagem_de_erro.dart';
 
 /// (Coroinha) As missas futuras com escala livre em que a pessoa ainda não
 /// está escalada. Cada uma tem o botão para entrar na escala.
@@ -17,8 +18,8 @@ class MissasAbertasPage extends StatefulWidget {
 }
 
 class _MissasAbertasPageState extends State<MissasAbertasPage> {
-  late Future<List<MissaCadastrada>> _missas =
-      widget.repositorio.missasAbertas();
+  late Future<List<MissaCadastrada>> _missas = widget.repositorio
+      .missasAbertas();
   bool _ocupado = false; // bloqueia os botões enquanto uma entrada acontece
 
   void _recarregar() {
@@ -44,11 +45,10 @@ class _MissasAbertasPageState extends State<MissasAbertasPage> {
       deuCerto = true;
     } on Object catch (e) {
       if (!mounted) return;
-      _avisar(e is RegraDeNegocio
-          ? e.mensagem
-          : 'Algo deu errado. Tente de novo.');
+      _avisar(mensagemDoErro(e));
       // Nestes casos a lista que a pessoa está vendo ficou velha.
-      listaDesatualizada = e is EscalaNaoLivre ||
+      listaDesatualizada =
+          e is EscalaNaoLivre ||
           e is MissaJaComecou ||
           e is JaEscaladoNaMissa ||
           e is MissaInexistente;

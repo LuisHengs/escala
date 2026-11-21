@@ -1,7 +1,7 @@
-import 'package:escala_core/escala_core.dart';
 import 'package:flutter/material.dart';
 
 import '../data/escala_repository.dart';
+import '../mensagem_de_erro.dart';
 
 /// Tela de quem entrou com o Google mas ainda não tem perfil: digita o código
 /// do convite, o próprio nome e, se for menor de idade, o nome do responsável.
@@ -63,9 +63,7 @@ class _ConvitePageState extends State<ConvitePage> {
       setState(() {
         // Erros de regra têm mensagem própria. O resto (rede, falha técnica)
         // vira um texto genérico: nunca se mostra texto técnico à pessoa.
-        _mensagem = e is RegraDeNegocio
-            ? e.mensagem
-            : 'Algo deu errado. Tente de novo.';
+        _mensagem = mensagemDoErro(e);
       });
     } finally {
       if (mounted) setState(() => _enviando = false);

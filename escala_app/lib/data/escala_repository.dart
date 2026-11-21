@@ -25,6 +25,10 @@ abstract class EscalaRepository {
   /// Emite o estado de acesso agora e toda vez que o login ou o perfil mudar.
   Stream<EstadoAcesso> get estadoAcesso;
 
+  /// Verifica o acesso outra vez e emite o resultado em [estadoAcesso]. Serve
+  /// para "Tentar de novo" quando a verificação falhou (ex.: sem rede).
+  Future<void> verificarAcessoDeNovo();
+
   Future<void> entrarComGoogle();
 
   Future<void> sair();
@@ -87,7 +91,7 @@ abstract class EscalaRepository {
     required DateTime inicio,
     required String localId,
     bool escalaLivre = false,
-    });
+  });
 
   /// (Administrador) Muda horário e/ou local de uma missa. [inicio] é a hora do
   /// aparelho. Falhas de regra chegam como [RegraDeNegocio] (ex.:
@@ -142,7 +146,7 @@ abstract class EscalaRepository {
   /// (EscalaNaoLivre, MissaJaComecou, JaEscaladoNaMissa, ConflitoDeHorario).
   Future<void> entrarNaEscala(String missaId);
 
-    /// O coroinha sai de uma escala em que ele mesmo se colocou.
+  /// O coroinha sai de uma escala em que ele mesmo se colocou.
   /// Lança [SaidaNaoPermitida], [MissaJaComecou] ou [EscalacaoNaoEncontrada].
   Future<void> sairDaEscala(String missaId);
 }

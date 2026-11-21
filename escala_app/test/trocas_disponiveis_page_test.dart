@@ -215,4 +215,20 @@ void main() {
     repo.travarAceite!.complete();
     await t.pumpAndSettle();
   });
+
+  testWidgets(
+    'TP13: [guarda] se só a recarga falhar, mostra a falha de carga',
+    (t) async {
+      repo.disponiveis = [troca()];
+      repo.aoAceitar = (_) =>
+          repo.erroAoCarregarDisponiveis = Exception('sem sinal');
+      await montar(t);
+
+      await aceitar(t);
+
+      expect(repo.aceites, ['t1']); // aceitou, uma única vez
+      expect(find.text('Não foi possível carregar as trocas.'), findsOneWidget);
+      expect(find.text('Algo deu errado. Tente de novo.'), findsNothing);
+    },
+  );
 }

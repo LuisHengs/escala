@@ -162,7 +162,7 @@ RegraDeNegocio traduzirErroDoBanco(String codigo) {
         'O sistema precisa de pelo menos um administrador ativo.'),
     // Escala livre
     'ESCALA_NAO_LIVRE' =>
-        const EscalaNaoLivre('Esta missa não está com a escala livre.'),
+      const EscalaNaoLivre('Esta missa não está com a escala livre.'),
     'SAIDA_NAO_PERMITIDA' => const SaidaNaoPermitida(
         'Você foi escalado pelo administrador. Para sair, peça uma troca.'),
     // Qualquer outra coisa
