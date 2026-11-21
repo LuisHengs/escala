@@ -5,6 +5,7 @@ import 'missa_cadastrada.dart';
 import 'coroinha.dart';
 import 'escalado_na_missa.dart';
 import 'pendencia_em_atraso.dart';
+import 'pessoa.dart';
 
 /// Em que ponto do caminho de acesso a pessoa está.
 ///  - semLogin:  ainda não entrou com o Google;
@@ -114,4 +115,16 @@ abstract class EscalaRepository {
   Future<void> desescalar(String escalacaoId);
 
   Future<List<PendenciaEmAtraso>> pendenciasEmAtraso();
+
+  /// (Administrador) Todas as pessoas cadastradas, ativas ou não.
+  Future<List<Pessoa>> pessoas();
+
+  /// (Administrador) Ativa ou desativa uma pessoa. Desativar é recusado se ela
+  /// tem missas futuras (TemEscalacoesFuturas) ou se é o último administrador
+  /// ativo (UltimoAdmin).
+  Future<void> definirAtivo({required String pessoaId, required bool ativo});
+
+  /// (Administrador) Muda o papel ('admin' ou 'coroinha'). Tirar o papel do
+  /// último administrador ativo é recusado (UltimoAdmin).
+  Future<void> definirPapel({required String pessoaId, required String papel});
 }

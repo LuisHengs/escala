@@ -5,6 +5,7 @@ import 'convites_page.dart';
 import 'locais_page.dart';
 import 'missas_page.dart';
 import 'pendencias_em_atraso_page.dart';
+import 'pessoas_page.dart';
 
 /// O menu da área de administração. Cada item abre uma tela; novos itens
 /// entram aqui conforme as telas ficam prontas.
@@ -66,6 +67,17 @@ class AdminPage extends StatelessWidget {
               MaterialPageRoute<void>(
                 builder: (_) =>
                     PendenciasEmAtrasoPage(repositorio: repositorio),
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.people_outline),
+            title: const Text('Pessoas'),
+            subtitle: const Text('Ativar, desativar e mudar o papel'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => PessoasPage(repositorio: repositorio),
               ),
             ),
           ),

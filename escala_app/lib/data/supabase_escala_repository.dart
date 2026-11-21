@@ -11,6 +11,7 @@ import 'missa_cadastrada.dart';
 import 'coroinha.dart';
 import 'escalado_na_missa.dart';
 import 'pendencia_em_atraso.dart';
+import 'pessoa.dart';
 
 /// A versão de verdade: fala com o Supabase. É o ÚNICO arquivo (junto com o
 /// main.dart) que conhece o pacote supabase_flutter.
@@ -257,5 +258,35 @@ class SupabaseEscalaRepository implements EscalaRepository {
   @override
   Future<void> desescalar(String escalacaoId) async {
     await _chamarRegra('desescalar', {'p_escalacao_id': escalacaoId});
+  }
+
+  @override
+  Future<List<Pessoa>> pessoas() async {
+    // A RLS deixa qualquer membro ler os perfis.
+    final linhas =
+        await _client.from('perfis').select('id, nome, papel, ativo');
+    return Pessoa.listaDeJson(linhas);
+  }
+
+  @override
+  Future<void> definirAtivo({
+    required String pessoaId,
+    required bool ativo,
+  }) async {
+    await _chamarRegra('definir_ativo', {
+      'p_perfil_id': pessoaId,
+      'p_ativo': ativo,
+    });
+  }
+
+  @override
+  Future<void> definirPapel({
+    required String pessoaId,
+    required String papel,
+  }) async {
+    await _chamarRegra('definir_papel', {
+      'p_perfil_id': pessoaId,
+      'p_papel': papel,
+    });
   }
 }

@@ -65,4 +65,15 @@ void main() {
 
     expect(find.text('Nenhuma pendência em atraso.'), findsOneWidget);
   });
+
+  testWidgets('AD6: tocar em Pessoas abre a lista de pessoas', (t) async {
+    await montar(t);
+
+    expect(find.text('Pessoas'), findsOneWidget);
+
+    await t.tap(find.text('Pessoas'));
+    await t.pumpAndSettle();
+
+    expect(find.text('Nenhuma pessoa cadastrada.'), findsOneWidget);
+  });
 }

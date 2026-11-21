@@ -8,6 +8,7 @@ import 'package:escala_app/data/coroinha.dart';
 import 'package:escala_app/data/escalado_na_missa.dart';
 import 'package:escala_app/data/escala_repository.dart';
 import 'package:escala_app/data/pendencia_em_atraso.dart';
+import 'package:escala_app/data/pessoa.dart';
 
 /// Versão falsa do repositório, só para testes: o teste manda o estado que
 /// quiser, conta as chamadas que a tela fez e simula erro ou demora.
@@ -227,6 +228,47 @@ class FakeEscalaRepository implements EscalaRepository {
     if (erroAoDesescalar != null) throw erroAoDesescalar!;
     escalacoesRemovidas.add(escalacaoId);
     aoDesescalar?.call(escalacaoId);
+  }
+
+  // ---------- administração: pessoas ----------
+
+  List<Pessoa> pessoasCadastradas = [];
+  int cargasPessoas = 0;
+  Object? erroAoCarregarPessoas;
+  Completer<void>? travarCargaPessoas;
+
+  @override
+  Future<List<Pessoa>> pessoas() async {
+    cargasPessoas++;
+    if (travarCargaPessoas != null) await travarCargaPessoas!.future;
+    if (erroAoCarregarPessoas != null) throw erroAoCarregarPessoas!;
+    return List.of(pessoasCadastradas);
+  }
+
+  final ativosDefinidos = <({String pessoaId, bool ativo})>[];
+  Object? erroAoDefinirAtivo;
+  void Function(String pessoaId, bool ativo)? aoDefinirAtivo;
+
+  @override
+  Future<void> definirAtivo({
+    required String pessoaId,
+    required bool ativo,
+  }) async {
+    if (erroAoDefinirAtivo != null) throw erroAoDefinirAtivo!;
+    ativosDefinidos.add((pessoaId: pessoaId, ativo: ativo));
+    aoDefinirAtivo?.call(pessoaId, ativo);
+  }
+
+  final papeisDefinidos = <({String pessoaId, String papel})>[];
+  Object? erroAoDefinirPapel;
+
+  @override
+  Future<void> definirPapel({
+    required String pessoaId,
+    required String papel,
+  }) async {
+    if (erroAoDefinirPapel != null) throw erroAoDefinirPapel!;
+    papeisDefinidos.add((pessoaId: pessoaId, papel: papel));
   }
 
   // ---------- escala ----------
