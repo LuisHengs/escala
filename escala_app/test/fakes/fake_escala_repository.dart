@@ -4,7 +4,7 @@ import 'package:escala_app/data/local.dart';
 import 'package:escala_app/data/item_escala.dart';
 import 'package:escala_app/data/troca_disponivel.dart';
 import 'package:escala_app/data/missa_cadastrada.dart';
-import 'package:escala_app/data/coroinha.dart';
+import 'package:escala_app/data/pessoa_escalavel.dart';
 import 'package:escala_app/data/escalado_na_missa.dart';
 import 'package:escala_app/data/escala_repository.dart';
 import 'package:escala_app/data/pendencia_em_atraso.dart';
@@ -181,12 +181,12 @@ class FakeEscalaRepository implements EscalaRepository {
 
   // ---------- administração: escala por missa ----------
 
-  List<Coroinha> coroinhasCadastrados = [];
+  List<PessoaEscalavel> coroinhasCadastrados = [];
   int cargasCoroinhas = 0;
   Object? erroAoCarregarCoroinhas;
 
   @override
-  Future<List<Coroinha>> coroinhas() async {
+  Future<List<PessoaEscalavel>> coroinhas() async {
     cargasCoroinhas++;
     if (erroAoCarregarCoroinhas != null) throw erroAoCarregarCoroinhas!;
     return List.of(coroinhasCadastrados);

@@ -22,4 +22,14 @@ void main() {
   test('LC3: lista vazia dá lista vazia', () {
     expect(Local.listaDeJson([]), isEmpty);
   });
+
+  test('LC4: a ordem ignora os acentos', () {
+    final locais = Local.listaDeJson([
+      {'id': 'a', 'nome': 'Zeta'},
+      {'id': 'b', 'nome': 'Ágape'},
+      {'id': 'c', 'nome': 'Capela'},
+    ]);
+
+    expect(locais.map((l) => l.nome), ['Ágape', 'Capela', 'Zeta']);
+  });
 }

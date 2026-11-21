@@ -37,4 +37,14 @@ void main() {
   test('PS4: lista vazia dá lista vazia', () {
     expect(Pessoa.listaDeJson([]), isEmpty);
   });
+
+  test('PS5: a ordem ignora os acentos', () {
+    final lista = Pessoa.listaDeJson([
+      linha(id: 'z', nome: 'Zeca'),
+      linha(id: 'e', nome: 'Érica'),
+      linha(id: 'd', nome: 'Davi'),
+    ]);
+
+    expect(lista.map((p) => p.id), ['d', 'e', 'z']);
+  });
 }

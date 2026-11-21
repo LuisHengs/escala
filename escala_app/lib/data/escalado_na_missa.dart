@@ -1,3 +1,5 @@
+import '../ordenacao.dart';
+
 /// Uma escalação existente, exibida na administração de uma missa.
 class EscaladoNaMissa {
   final String id;
@@ -29,5 +31,5 @@ class EscaladoNaMissa {
       linhas
           .map((linha) => EscaladoNaMissa.deJson(linha as Map<String, dynamic>))
           .toList()
-        ..sort((a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()));
+        ..sort((a, b) => compararNomes(a.nome, b.nome));
 }

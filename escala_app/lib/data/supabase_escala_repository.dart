@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:escala_core/escala_core.dart' hide Coroinha;
+import 'package:escala_core/escala_core.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'local.dart';
@@ -8,7 +8,7 @@ import 'item_escala.dart';
 import 'escala_repository.dart';
 import 'troca_disponivel.dart';
 import 'missa_cadastrada.dart';
-import 'coroinha.dart';
+import 'pessoa_escalavel.dart';
 import 'escalado_na_missa.dart';
 import 'pendencia_em_atraso.dart';
 import 'pessoa.dart';
@@ -222,13 +222,13 @@ class SupabaseEscalaRepository implements EscalaRepository {
   }
 
   @override
-  Future<List<Coroinha>> coroinhas() async {
+  Future<List<PessoaEscalavel>> coroinhas() async {
     // Qualquer pessoa ativa pode ser escalada (coroinha ou administrador).
     final linhas = await _client
         .from('perfis')
         .select('id, nome')
         .eq('ativo', true);
-    return Coroinha.listaDeJson(linhas);
+    return PessoaEscalavel.listaDeJson(linhas);
   }
 
   @override

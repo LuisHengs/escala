@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../data/coroinha.dart';
+import '../data/pessoa_escalavel.dart';
 import '../data/escala_repository.dart';
 import '../data/escalado_na_missa.dart';
 import '../data/missa_cadastrada.dart';
@@ -51,7 +51,7 @@ class _EscalaMissaPageState extends State<EscalaMissaPage> {
 
     setState(() => _ocupadas.add('adicionar'));
 
-    List<Coroinha> disponiveis;
+    List<PessoaEscalavel> disponiveis;
 
     try {
       final todos = await widget.repositorio.coroinhas();
@@ -340,7 +340,7 @@ class _EscalaMissaPageState extends State<EscalaMissaPage> {
 
 /// Diálogo para escolher um coroinha e informar sua função.
 class _AdicionarCoroinhaDialog extends StatefulWidget {
-  final List<Coroinha> coroinhas;
+  final List<PessoaEscalavel> coroinhas;
 
   const _AdicionarCoroinhaDialog({required this.coroinhas});
 

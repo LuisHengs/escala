@@ -2,7 +2,7 @@ import 'local.dart';
 import 'item_escala.dart';
 import 'troca_disponivel.dart';
 import 'missa_cadastrada.dart';
-import 'coroinha.dart';
+import 'pessoa_escalavel.dart';
 import 'escalado_na_missa.dart';
 import 'pendencia_em_atraso.dart';
 import 'pessoa.dart';
@@ -108,7 +108,7 @@ abstract class EscalaRepository {
   Future<void> removerMissa(String missaId);
 
   /// (Administrador) Coroinhas ativos disponíveis para novas escalações.
-  Future<List<Coroinha>> coroinhas();
+  Future<List<PessoaEscalavel>> coroinhas();
 
   /// (Administrador) Escalações de uma missa, com nome e função.
   Future<List<EscaladoNaMissa>> escaladosDaMissa(String missaId);

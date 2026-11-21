@@ -35,4 +35,14 @@ void main() {
   test('EM3: lista vazia retorna lista vazia', () {
     expect(EscaladoNaMissa.listaDeJson([]), isEmpty);
   });
+
+  test('EM4: a ordem ignora os acentos', () {
+    final escalados = EscaladoNaMissa.listaDeJson([
+      linha(id: '3', nome: 'Zeca'),
+      linha(id: '1', nome: 'Ágata'),
+      linha(id: '2', nome: 'Davi'),
+    ]);
+
+    expect(escalados.map((e) => e.id), ['1', '2', '3']);
+  });
 }

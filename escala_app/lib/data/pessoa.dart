@@ -1,3 +1,5 @@
+import '../ordenacao.dart';
+
 /// Uma pessoa cadastrada, como o administrador a vê na gestão de pessoas.
 class Pessoa {
   final String id;
@@ -27,5 +29,5 @@ class Pessoa {
   /// A lista inteira, em ordem alfabética (sem diferenciar maiúsculas).
   static List<Pessoa> listaDeJson(List<dynamic> linhas) =>
       linhas.map((l) => Pessoa.deJson(l as Map<String, dynamic>)).toList()
-        ..sort((a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()));
+        ..sort((a, b) => compararNomes(a.nome, b.nome));
 }

@@ -1,3 +1,5 @@
+import '../ordenacao.dart';
+
 /// Uma igreja ou capela onde há missa.
 class Local {
   final String id;
@@ -12,5 +14,5 @@ class Local {
   /// A lista inteira, em ordem alfabética (sem diferenciar maiúsculas).
   static List<Local> listaDeJson(List<dynamic> linhas) =>
       linhas.map((l) => Local.deJson(l as Map<String, dynamic>)).toList()
-        ..sort((a, b) => a.nome.toLowerCase().compareTo(b.nome.toLowerCase()));
+        ..sort((a, b) => compararNomes(a.nome, b.nome));
 }

@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:escala_app/data/coroinha.dart';
+import 'package:escala_app/data/pessoa_escalavel.dart';
 import 'package:escala_app/data/escalado_na_missa.dart';
 import 'package:escala_app/data/missa_cadastrada.dart';
 import 'package:escala_app/telas/escala_missa_page.dart';
-import 'package:escala_core/escala_core.dart' hide Coroinha;
+import 'package:escala_core/escala_core.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -227,8 +227,8 @@ void main() {
     t,
   ) async {
     repo.coroinhasCadastrados = [
-      const Coroinha(id: 'c1', nome: 'Ana'),
-      const Coroinha(id: 'c3', nome: 'Carla'),
+      const PessoaEscalavel(id: 'c1', nome: 'Ana'),
+      const PessoaEscalavel(id: 'c3', nome: 'Carla'),
     ];
     repo.escaladosPorMissa['m1'] = [ana];
     repo.aoEscalar = (missaId, coroinhaId, funcao) =>
@@ -260,7 +260,7 @@ void main() {
   testWidgets('EQ12: sem coroinha disponível, avisa e não abre o diálogo', (
     t,
   ) async {
-    repo.coroinhasCadastrados = [const Coroinha(id: 'c1', nome: 'Ana')];
+    repo.coroinhasCadastrados = [const PessoaEscalavel(id: 'c1', nome: 'Ana')];
     repo.escaladosPorMissa['m1'] = [ana];
     await montar(t);
 
@@ -274,40 +274,49 @@ void main() {
   });
 
   testWidgets(
-      'EQ13: sem escolher coroinha, o diálogo cobra o coroinha (a função é opcional)',
-      (t) async {
-    repo.coroinhasCadastrados = [const Coroinha(id: 'c3', nome: 'Carla')];
-    await montar(t);
+    'EQ13: sem escolher coroinha, o diálogo cobra o coroinha (a função é opcional)',
+    (t) async {
+      repo.coroinhasCadastrados = [
+        const PessoaEscalavel(id: 'c3', nome: 'Carla'),
+      ];
+      await montar(t);
 
-    await abrirAdicionar(t);
-    await t.tap(noDialogo(find.text('Adicionar')));
-    await t.pumpAndSettle();
+      await abrirAdicionar(t);
+      await t.tap(noDialogo(find.text('Adicionar')));
+      await t.pumpAndSettle();
 
-    expect(find.text('Selecione um coroinha.'), findsOneWidget);
-    expect(find.text('Informe a função.'), findsNothing);
-    expect(repo.escalacoesCriadas, isEmpty);
-  });
+      expect(find.text('Selecione um coroinha.'), findsOneWidget);
+      expect(find.text('Informe a função.'), findsNothing);
+      expect(repo.escalacoesCriadas, isEmpty);
+    },
+  );
 
   testWidgets(
-      'EQ16: função em branco é enviada vazia (o banco usa "A definir")',
-      (t) async {
-    repo.coroinhasCadastrados = [const Coroinha(id: 'c3', nome: 'Carla')];
-    await montar(t);
+    'EQ16: função em branco é enviada vazia (o banco usa "A definir")',
+    (t) async {
+      repo.coroinhasCadastrados = [
+        const PessoaEscalavel(id: 'c3', nome: 'Carla'),
+      ];
+      await montar(t);
 
-    await abrirAdicionar(t);
-    await escolherCoroinha(t, 'Carla');
-    await t.tap(noDialogo(find.text('Adicionar')));
-    await t.pumpAndSettle();
+      await abrirAdicionar(t);
+      await escolherCoroinha(t, 'Carla');
+      await t.tap(noDialogo(find.text('Adicionar')));
+      await t.pumpAndSettle();
 
-    expect(repo.escalacoesCriadas, [
-      (missaId: 'm1', coroinhaId: 'c3', funcao: ''),
-    ]);
-    expect(find.byType(AlertDialog), findsNothing);
-  });
+      expect(repo.escalacoesCriadas, [
+        (missaId: 'm1', coroinhaId: 'c3', funcao: ''),
+      ]);
+      expect(find.byType(AlertDialog), findsNothing);
+    },
+  );
 
-  testWidgets('EQ17: o diálogo avisa o que acontece com a função em branco',
-      (t) async {
-    repo.coroinhasCadastrados = [const Coroinha(id: 'c3', nome: 'Carla')];
+  testWidgets('EQ17: o diálogo avisa o que acontece com a função em branco', (
+    t,
+  ) async {
+    repo.coroinhasCadastrados = [
+      const PessoaEscalavel(id: 'c3', nome: 'Carla'),
+    ];
     await montar(t);
 
     await abrirAdicionar(t);
@@ -321,7 +330,9 @@ void main() {
   testWidgets('EQ14: conflito de horário mostra a mensagem do banco', (
     t,
   ) async {
-    repo.coroinhasCadastrados = [const Coroinha(id: 'c3', nome: 'Carla')];
+    repo.coroinhasCadastrados = [
+      const PessoaEscalavel(id: 'c3', nome: 'Carla'),
+    ];
     repo.erroAoEscalar = const ConflitoDeHorario(
       'Esse coroinha já está escalado em uma missa com horário próximo.',
     );
@@ -350,7 +361,9 @@ void main() {
   testWidgets(
     'EQ15: enquanto escala, o botão Adicionar coroinha fica bloqueado',
     (t) async {
-      repo.coroinhasCadastrados = [const Coroinha(id: 'c3', nome: 'Carla')];
+      repo.coroinhasCadastrados = [
+        const PessoaEscalavel(id: 'c3', nome: 'Carla'),
+      ];
       repo.travarEscalar = Completer<void>();
       await montar(t);
 
