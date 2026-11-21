@@ -5,7 +5,7 @@ import 'package:escala_app/data/escalado_na_missa.dart';
 import 'package:escala_app/data/missa_cadastrada.dart';
 import 'package:escala_app/telas/escala_missa_page.dart';
 import 'package:escala_core/escala_core.dart' hide Coroinha;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes/fake_escala_repository.dart';

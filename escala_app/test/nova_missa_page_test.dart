@@ -5,7 +5,7 @@ import 'package:escala_app/data/missa_cadastrada.dart';
 import 'package:escala_app/telas/missas_page.dart';
 import 'package:escala_app/telas/nova_missa_page.dart';
 import 'package:escala_core/escala_core.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes/fake_escala_repository.dart';

@@ -38,6 +38,7 @@ dependencies:
 
   escala_core:
     path: ../escala_core
+  material_ui: ^1.11.1
 
 dev_dependencies:
   flutter_test:

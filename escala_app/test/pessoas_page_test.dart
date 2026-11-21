@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:escala_app/data/pessoa.dart';
 import 'package:escala_app/telas/pessoas_page.dart';
 import 'package:escala_core/escala_core.dart' hide Coroinha;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes/fake_escala_repository.dart';

@@ -1,6 +1,6 @@
 import 'package:escala_app/data/pendencia_em_atraso.dart';
 import 'package:escala_app/telas/pendencias_em_atraso_page.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes/fake_escala_repository.dart';

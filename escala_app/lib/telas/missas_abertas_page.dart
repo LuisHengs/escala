@@ -1,5 +1,5 @@
 import 'package:escala_core/escala_core.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../data/escala_repository.dart';
 import '../data/missa_cadastrada.dart';
