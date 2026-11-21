@@ -83,7 +83,11 @@ abstract class EscalaRepository {
   /// (Administrador) Cadastra uma missa. [inicio] é a hora do aparelho.
   /// Falhas de regra chegam como [RegraDeNegocio] (ex.: HorarioInvalido,
   /// LocalInexistente).
-  Future<void> criarMissa({required DateTime inicio, required String localId});
+  Future<void> criarMissa({
+    required DateTime inicio,
+    required String localId,
+    bool escalaLivre = false,
+    });
 
   /// (Administrador) Muda horário e/ou local de uma missa. [inicio] é a hora do
   /// aparelho. Falhas de regra chegam como [RegraDeNegocio] (ex.:
@@ -92,6 +96,7 @@ abstract class EscalaRepository {
     required String missaId,
     required DateTime inicio,
     required String localId,
+    bool escalaLivre = false,
   });
 
   /// (Administrador) Remove uma missa. Se ainda houver coroinhas escalados,
@@ -127,4 +132,17 @@ abstract class EscalaRepository {
   /// (Administrador) Muda o papel ('admin' ou 'coroinha'). Tirar o papel do
   /// último administrador ativo é recusado (UltimoAdmin).
   Future<void> definirPapel({required String pessoaId, required String papel});
+
+  /// (Coroinha) As missas futuras com escala livre em que a pessoa logada
+  /// ainda NÃO está escalada, em ordem de horário.
+  Future<List<MissaCadastrada>> missasAbertas();
+
+  /// (Coroinha) Entra na escala de uma missa com escala livre: função "A
+  /// definir" e já confirmado. Falhas de regra chegam como [RegraDeNegocio]
+  /// (EscalaNaoLivre, MissaJaComecou, JaEscaladoNaMissa, ConflitoDeHorario).
+  Future<void> entrarNaEscala(String missaId);
+
+    /// O coroinha sai de uma escala em que ele mesmo se colocou.
+  /// Lança [SaidaNaoPermitida], [MissaJaComecou] ou [EscalacaoNaoEncontrada].
+  Future<void> sairDaEscala(String missaId);
 }

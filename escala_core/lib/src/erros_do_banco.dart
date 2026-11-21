@@ -83,6 +83,14 @@ class UltimoAdmin extends RegraDeNegocio {
   const UltimoAdmin(super.mensagem);
 }
 
+class EscalaNaoLivre extends RegraDeNegocio {
+  const EscalaNaoLivre(super.mensagem);
+}
+
+class SaidaNaoPermitida extends RegraDeNegocio {
+  const SaidaNaoPermitida(super.mensagem);
+}
+
 // ---------- O que o app não sabe traduzir ----------
 
 /// Erro que o app não sabe traduzir (código novo no banco, falha técnica do
@@ -152,6 +160,11 @@ RegraDeNegocio traduzirErroDoBanco(String codigo) {
         'Esta missa tem coroinhas escalados. Retire-os antes de removê-la.'),
     'ULTIMO_ADMIN' => const UltimoAdmin(
         'O sistema precisa de pelo menos um administrador ativo.'),
+    // Escala livre
+    'ESCALA_NAO_LIVRE' =>
+        const EscalaNaoLivre('Esta missa não está com a escala livre.'),
+    'SAIDA_NAO_PERMITIDA' => const SaidaNaoPermitida(
+        'Você foi escalado pelo administrador. Para sair, peça uma troca.'),
     // Qualquer outra coisa
     _ => ErroDesconhecido(c),
   };

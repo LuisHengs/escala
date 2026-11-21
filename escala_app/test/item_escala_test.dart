@@ -9,12 +9,15 @@ Map<String, dynamic> linha({
   String status = 'pendente',
   bool atraso = false,
   String inicio = '2026-11-22T21:00:00+00:00',
+  bool autoEscalada = false,
   List<Map<String, dynamic>> trocas = const [],
 }) => {
   'id': id,
+  'missa_id': 'm1',
   'funcao': 'turiferário',
   'status': status,
   'confirmado_com_atraso': atraso,
+  'auto_escalada': autoEscalada,
   'missas': {
     'inicio': inicio,
     'locais': {'nome': 'Matriz'},
@@ -110,6 +113,7 @@ void main() {
   test('M7: o prazo para confirmar é 2h antes da missa', () {
     final item = ItemEscala(
       escalacaoId: 'e1',
+      missaId: 'm1',
       inicio: DateTime(2026, 11, 22, 18, 0),
       local: 'Matriz',
       funcao: 'turiferário',
@@ -117,5 +121,14 @@ void main() {
     );
 
     expect(item.limiteParaConfirmar, DateTime(2026, 11, 22, 16, 0));
+  });
+
+  test('M8: lê o id da missa', () {
+    expect(ItemEscala.deJson(linha()).missaId, 'm1');
+  });
+
+  test('M9: lê se foi a própria pessoa que se escalou', () {
+    expect(ItemEscala.deJson(linha(autoEscalada: true)).autoEscalada, isTrue);
+    expect(ItemEscala.deJson(linha(autoEscalada: false)).autoEscalada, isFalse);
   });
 }

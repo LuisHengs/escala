@@ -21,14 +21,17 @@ void main() {
     StatusPresenca status = StatusPresenca.pendente,
     bool atraso = false,
     bool troca = false,
+    bool auto = false,
   }) => ItemEscala(
     escalacaoId: id,
+    missaId: 'm1',
     inicio: DateTime(2026, 11, 22, 18, 0),
     local: 'Matriz',
     funcao: 'turiferário',
     status: status,
     confirmadoComAtraso: atraso,
     trocaAbertaId: troca ? 't1' : null,
+    autoEscalada: auto,
   );
 
   Future<void> montar(
@@ -332,6 +335,121 @@ void main() {
     await t.pumpAndSettle();
 
     expect(repo.cargas, 2);
+  });
+
+  // ---------- missas abertas (escala livre) ----------
+
+  testWidgets('P27: o botão Missas abertas leva à lista de missas abertas', (
+    t,
+  ) async {
+    await montar(t);
+
+    await t.tap(find.text('Missas abertas'));
+    await t.pumpAndSettle();
+
+    expect(find.text('Nenhuma missa aberta no momento.'), findsOneWidget);
+  });
+
+  testWidgets('P28: ao voltar das missas abertas, a escala é recarregada', (
+    t,
+  ) async {
+    await montar(t);
+    expect(repo.cargas, 1);
+
+    await t.tap(find.text('Missas abertas'));
+    await t.pumpAndSettle();
+    await t.pageBack();
+    await t.pumpAndSettle();
+
+    expect(repo.cargas, 2);
+  });
+
+  // ---------- sair da escala que a própria pessoa escolheu ----------
+
+  Finder noDialogo(Finder f) =>
+      find.descendant(of: find.byType(AlertDialog), matching: f);
+
+  testWidgets('P29: escalada por conta própria: aviso e botão Sair da escala', (
+    t,
+  ) async {
+    repo.escala = [item(auto: true)];
+    await montar(t);
+
+    expect(find.text('Você se escalou'), findsOneWidget);
+    expect(find.text('Sair da escala'), findsOneWidget);
+  });
+
+  testWidgets('P30: escalada pelo administrador: sem o botão Sair da escala', (
+    t,
+  ) async {
+    repo.escala = [item()];
+    await montar(t);
+
+    expect(find.text('Você se escalou'), findsNothing);
+    expect(find.text('Sair da escala'), findsNothing);
+    expect(find.text('Pedir troca'), findsOneWidget);
+  });
+
+  testWidgets('P31: Sair da escala pede confirmação e ainda não sai', (
+    t,
+  ) async {
+    repo.escala = [item(auto: true)];
+    await montar(t);
+
+    await t.tap(find.text('Sair da escala'));
+    await t.pumpAndSettle();
+
+    expect(find.text('Sair da escala?'), findsOneWidget);
+    expect(noDialogo(find.text('Sim, sair')), findsOneWidget);
+    expect(noDialogo(find.text('Agora não')), findsOneWidget);
+    expect(repo.saidasDaEscala, isEmpty);
+  });
+
+  testWidgets('P32: confirmar sai da escala com o id da missa e recarrega', (
+    t,
+  ) async {
+    repo.escala = [item(auto: true)];
+    repo.aoSairDaEscala = (id) => repo.escala = [];
+    await montar(t);
+
+    await t.tap(find.text('Sair da escala'));
+    await t.pumpAndSettle();
+    await t.tap(noDialogo(find.text('Sim, sair')));
+    await t.pumpAndSettle();
+
+    expect(repo.saidasDaEscala, ['m1']);
+    expect(repo.cargas, 2);
+    expect(find.text('Você não tem missas escaladas.'), findsOneWidget);
+  });
+
+  testWidgets('P33: Agora não na confirmação não sai de nada', (t) async {
+    repo.escala = [item(auto: true)];
+    await montar(t);
+
+    await t.tap(find.text('Sair da escala'));
+    await t.pumpAndSettle();
+    await t.tap(noDialogo(find.text('Agora não')));
+    await t.pumpAndSettle();
+
+    expect(repo.saidasDaEscala, isEmpty);
+    expect(repo.cargas, 1);
+  });
+
+  testWidgets('P34: erro de regra ao sair mostra a mensagem e mantém a missa', (
+    t,
+  ) async {
+    repo.escala = [item(auto: true)];
+    repo.erroAoSairDaEscala = const MissaJaComecou('Esta missa já começou.');
+    await montar(t);
+
+    await t.tap(find.text('Sair da escala'));
+    await t.pumpAndSettle();
+    await t.tap(noDialogo(find.text('Sim, sair')));
+    await t.pumpAndSettle();
+
+    expect(find.text('Esta missa já começou.'), findsOneWidget);
+    expect(find.text('dom 22/11 às 18:00'), findsOneWidget);
+    expect(repo.cargas, 1);
   });
 
   // ---------- área do administrador ----------

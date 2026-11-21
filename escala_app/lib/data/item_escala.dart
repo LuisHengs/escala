@@ -4,23 +4,28 @@ import 'package:escala_core/escala_core.dart';
 class ItemEscala {
   final String escalacaoId;
 
+  final String missaId;
+
   /// Horário no fuso do aparelho (o banco guarda em UTC).
   final DateTime inicio;
   final String local;
   final String funcao;
   final StatusPresenca status;
   final bool confirmadoComAtraso;
+  final bool autoEscalada;
 
   /// O id da troca ABERTA desta escalação, ou nulo se não há nenhuma.
   final String? trocaAbertaId;
 
   const ItemEscala({
     required this.escalacaoId,
+    required this.missaId,
     required this.inicio,
     required this.local,
     required this.funcao,
     required this.status,
     this.confirmadoComAtraso = false,
+    this.autoEscalada = false,
     this.trocaAbertaId,
   });
 
@@ -40,11 +45,13 @@ class ItemEscala {
 
     return ItemEscala(
       escalacaoId: json['id'] as String,
+      missaId: json['missa_id'] as String,
       inicio: DateTime.parse(missa['inicio'] as String).toLocal(),
       local: local['nome'] as String,
       funcao: json['funcao'] as String,
       status: _status(json['status'] as String),
       confirmadoComAtraso: json['confirmado_com_atraso'] as bool,
+      autoEscalada: json['auto_escalada'] as bool? ?? false,
       trocaAbertaId: _idDaTrocaAberta(trocas),
     );
   }

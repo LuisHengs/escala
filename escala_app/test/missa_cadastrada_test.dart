@@ -2,16 +2,20 @@ import 'package:escala_app/data/missa_cadastrada.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Uma linha como o Supabase a devolve (a missa com o nome do local embutido).
+/// A chave escala_livre só entra quando informada, para o MC5 simular uma
+/// linha sem o campo.
 Map<String, dynamic> linha({
   String id = 'm1',
   String inicio = '2026-11-22T21:00:00+00:00',
   String localId = 'l1',
   String local = 'Matriz',
+  bool? escalaLivre,
 }) => {
   'id': id,
   'inicio': inicio,
   'local_id': localId,
   'locais': {'nome': local},
+  'escala_livre': ?escalaLivre,
 };
 
 void main() {
@@ -40,5 +44,15 @@ void main() {
 
   test('MC3: lista vazia dá lista vazia', () {
     expect(MissaCadastrada.listaDeJson([]), isEmpty);
+  });
+
+  test('MC4: lê se a escala é livre', () {
+    expect(MissaCadastrada.deJson(linha(escalaLivre: true)).escalaLivre, isTrue);
+    expect(
+        MissaCadastrada.deJson(linha(escalaLivre: false)).escalaLivre, isFalse);
+  });
+
+  test('MC5: sem o campo na linha, a escala não é livre', () {
+    expect(MissaCadastrada.deJson(linha()).escalaLivre, isFalse);
   });
 }

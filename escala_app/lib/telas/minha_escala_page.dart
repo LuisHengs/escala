@@ -6,6 +6,7 @@ import '../data/item_escala.dart';
 import '../formatacao.dart';
 import 'admin_page.dart';
 import 'trocas_disponiveis_page.dart';
+import 'missas_abertas_page.dart';
 
 /// As próximas missas de quem está logado, com a situação da presença, o
 /// botão de confirmar e o pedido de troca.
@@ -119,6 +120,34 @@ class _MinhaEscalaPageState extends State<MinhaEscalaPage> {
     );
   }
 
+  Future<void> _sairDaEscala(ItemEscala item) async {
+    final confirmou = await showDialog<bool>(
+      context: context,
+      builder: (contexto) => AlertDialog(
+        title: const Text('Sair da escala?'),
+        content: const Text(
+          'A vaga fica livre para outro coroinha se escalar.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(contexto, false),
+            child: const Text('Agora não'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(contexto, true),
+            child: const Text('Sim, sair'),
+          ),
+        ],
+      ),
+    );
+    if (confirmou != true || !mounted) return;
+
+    await _executar(
+      item.escalacaoId,
+      () => widget.repositorio.sairDaEscala(item.missaId),
+    );
+  }
+
   void _abrirAdministracao() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -132,6 +161,16 @@ class _MinhaEscalaPageState extends State<MinhaEscalaPage> {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => TrocasDisponiveisPage(repositorio: widget.repositorio),
+      ),
+    );
+    if (mounted) _recarregar();
+  }
+
+  Future<void> _abrirMissasAbertas() async {
+    // Entrar numa escala muda a minha escala: ao voltar, ela é recarregada.
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MissasAbertasPage(repositorio: widget.repositorio),
       ),
     );
     if (mounted) _recarregar();
@@ -165,6 +204,11 @@ class _MinhaEscalaPageState extends State<MinhaEscalaPage> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _abrirMissasAbertas,
+        icon: const Icon(Icons.event_available_outlined),
+        label: const Text('Missas abertas'),
+      ),
       body: FutureBuilder<List<ItemEscala>>(
         future: _escala,
         builder: (context, snapshot) {
@@ -194,7 +238,7 @@ class _MinhaEscalaPageState extends State<MinhaEscalaPage> {
           return RefreshIndicator(
             onRefresh: _puxarParaAtualizar,
             child: ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
               itemCount: itens.length,
               itemBuilder: (context, i) => _cartao(context, itens[i]),
             ),
@@ -247,7 +291,13 @@ class _MinhaEscalaPageState extends State<MinhaEscalaPage> {
               ),
             ],
             const SizedBox(height: 8),
-            if (item.trocaAberta)
+            if (item.autoEscalada) ...[
+              Text('Você se escalou', style: estilos.bodySmall),
+              TextButton(
+                onPressed: ocupada ? null : () => _sairDaEscala(item),
+                child: const Text('Sair da escala'),
+              ),
+            ] else if (item.trocaAberta)
               OutlinedButton(
                 onPressed: ocupada ? null : () => _cancelarPedido(item),
                 child: const Text('Cancelar pedido de troca'),

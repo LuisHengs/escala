@@ -91,7 +91,8 @@ class FakeEscalaRepository implements EscalaRepository {
   // ---------- administração: criar missa ----------
 
   /// Cada missa criada (horário e id do local), na ordem.
-  final missasCriadas = <({DateTime inicio, String localId})>[];
+    final missasCriadas =
+      <({DateTime inicio, String localId, bool escalaLivre})>[];
 
   /// Se preenchido, criarMissa() lança este erro.
   Object? erroAoCriarMissa;
@@ -106,16 +107,18 @@ class FakeEscalaRepository implements EscalaRepository {
   Future<void> criarMissa({
     required DateTime inicio,
     required String localId,
+    bool escalaLivre = false,
   }) async {
-    missasCriadas.add((inicio: inicio, localId: localId));
+    missasCriadas
+        .add((inicio: inicio, localId: localId, escalaLivre: escalaLivre));
     if (travarCriarMissa != null) await travarCriarMissa!.future;
     if (erroAoCriarMissa != null) throw erroAoCriarMissa!;
     aoCriarMissa?.call(inicio, localId);
   }
 
   // --- editar / remover missa ---
-  final missasEditadas =
-      <({String missaId, DateTime inicio, String localId})>[];
+    final missasEditadas =
+      <({String missaId, DateTime inicio, String localId, bool escalaLivre})>[];
   Object? erroAoEditarMissa;
   final missasRemovidas = <String>[];
   Object? erroAoRemoverMissa;
@@ -126,9 +129,15 @@ class FakeEscalaRepository implements EscalaRepository {
     required String missaId,
     required DateTime inicio,
     required String localId,
+    bool escalaLivre = false,
   }) async {
     if (erroAoEditarMissa != null) throw erroAoEditarMissa!;
-    missasEditadas.add((missaId: missaId, inicio: inicio, localId: localId));
+    missasEditadas.add((
+      missaId: missaId,
+      inicio: inicio,
+      localId: localId,
+      escalaLivre: escalaLivre,
+    ));
   }
 
   @override
@@ -430,5 +439,48 @@ class FakeEscalaRepository implements EscalaRepository {
     if (travarGeracao != null) await travarGeracao!.future;
     if (erroAoGerarConvite != null) throw erroAoGerarConvite!;
     return codigoGerado;
+  }
+
+  // ---------- coroinha: missas abertas (escala livre) ----------
+
+  List<MissaCadastrada> missasAbertasCadastradas = [];
+  int cargasMissasAbertas = 0;
+  Object? erroAoCarregarMissasAbertas;
+  Completer<void>? travarCargaMissasAbertas;
+
+  @override
+  Future<List<MissaCadastrada>> missasAbertas() async {
+    cargasMissasAbertas++;
+    if (travarCargaMissasAbertas != null) {
+      await travarCargaMissasAbertas!.future;
+    }
+    if (erroAoCarregarMissasAbertas != null) throw erroAoCarregarMissasAbertas!;
+    return List.of(missasAbertasCadastradas);
+  }
+
+  final entradasNaEscala = <String>[];
+  Object? erroAoEntrarNaEscala;
+  Completer<void>? travarEntrarNaEscala;
+  void Function(String missaId)? aoEntrarNaEscala;
+
+  @override
+  Future<void> entrarNaEscala(String missaId) async {
+    entradasNaEscala.add(missaId);
+    if (travarEntrarNaEscala != null) await travarEntrarNaEscala!.future;
+    if (erroAoEntrarNaEscala != null) throw erroAoEntrarNaEscala!;
+    aoEntrarNaEscala?.call(missaId);
+  }
+
+  // ---------- coroinha: sair da escala que ele mesmo escolheu ----------
+
+  final saidasDaEscala = <String>[];
+  Object? erroAoSairDaEscala;
+  void Function(String missaId)? aoSairDaEscala;
+
+  @override
+  Future<void> sairDaEscala(String missaId) async {
+    if (erroAoSairDaEscala != null) throw erroAoSairDaEscala!;
+    saidasDaEscala.add(missaId);
+    aoSairDaEscala?.call(missaId);
   }
 }

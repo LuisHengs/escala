@@ -210,13 +210,13 @@ begin
 
   -- ---------- C6: direitos de execução ----------
   if has_function_privilege('anon', 'public.criar_local(text)', 'execute')
-     or has_function_privilege('anon', 'public.criar_missa(timestamptz, uuid)', 'execute')
-     or has_function_privilege('anon', 'public.editar_missa(uuid, timestamptz, uuid)', 'execute') then
+     or has_function_privilege('anon', 'public.criar_missa(timestamptz, uuid, boolean)', 'execute')
+     or has_function_privilege('anon', 'public.editar_missa(uuid, timestamptz, uuid, boolean)', 'execute') then
     raise exception 'FALHOU [C6]: o papel anon (sem login) não deveria executar as funções de cadastro';
   end if;
   if not has_function_privilege('authenticated', 'public.criar_local(text)', 'execute')
-     or not has_function_privilege('authenticated', 'public.criar_missa(timestamptz, uuid)', 'execute')
-     or not has_function_privilege('authenticated', 'public.editar_missa(uuid, timestamptz, uuid)', 'execute') then
+     or not has_function_privilege('authenticated', 'public.criar_missa(timestamptz, uuid, boolean)', 'execute')
+     or not has_function_privilege('authenticated', 'public.editar_missa(uuid, timestamptz, uuid, boolean)', 'execute') then
     raise exception 'FALHOU [C6]: o papel authenticated (logado) deveria executar as funções de cadastro';
   end if;
 

@@ -168,7 +168,9 @@ class _MissasPageState extends State<MissasPage> {
                 ListTile(
                   leading: const Icon(Icons.event_outlined),
                   title: Text(formatarDataMissa(missa.inicio)),
-                  subtitle: Text(missa.localNome),
+                  subtitle: Text(missa.escalaLivre
+                      ? '${missa.localNome} · Escala livre'
+                      : missa.localNome),
                   onTap: () => _abrirEscala(missa),
                   trailing: PopupMenuButton<String>(
                     tooltip: 'Ações da missa',

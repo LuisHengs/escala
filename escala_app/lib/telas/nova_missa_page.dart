@@ -66,6 +66,7 @@ class _NovaMissaPageState extends State<NovaMissaPage> {
 
   late String? _localId = widget.missa?.localId;
   late DateTime? _inicio = widget.missa?.inicio;
+  late bool _escalaLivre = widget.missa?.escalaLivre ?? false;
   String? _mensagem; // aviso ou erro, já em português
   bool _salvando = false;
 
@@ -109,12 +110,17 @@ class _NovaMissaPageState extends State<NovaMissaPage> {
     try {
       final missa = widget.missa;
       if (missa == null) {
-        await widget.repositorio.criarMissa(inicio: inicio, localId: localId);
+        await widget.repositorio.criarMissa(
+          inicio: inicio,
+          localId: localId,
+          escalaLivre: _escalaLivre,
+        );
       } else {
         await widget.repositorio.editarMissa(
           missaId: missa.id,
           inicio: inicio,
           localId: localId,
+          escalaLivre: _escalaLivre,
         );
       }
       deuCerto = true;
@@ -207,6 +213,18 @@ class _NovaMissaPageState extends State<NovaMissaPage> {
                           ? 'Escolher data e hora'
                           : formatarDataMissa(inicio),
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Escala livre'),
+                    subtitle: const Text(
+                      'Os coroinhas podem se escalar sozinhos nesta missa.',
+                    ),
+                    value: _escalaLivre,
+                    onChanged: _salvando
+                        ? null
+                        : (valor) => setState(() => _escalaLivre = valor),
                   ),
                   if (_mensagem != null) ...[
                     const SizedBox(height: 16),

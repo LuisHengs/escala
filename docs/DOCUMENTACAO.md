@@ -1,6 +1,6 @@
 # Escala Coroinhas — Documentação do projeto
 
-> **Documento vivo.** Atualize-o ao fim de cada etapa. Estado: 20 de novembro de 2026.
+> **Documento vivo.** Atualize-o ao fim de cada etapa. Estado: 21 de novembro de 2026.
 >
 > **Nota de honestidade:** todo o código deste projeto foi escrito em conversa com o Claude. Tudo o que está marcado como "funcionando" foi **rodado e confirmado por você** (testes verdes, telas vistas no navegador). Em algumas conversas o Claude também validou o SQL num Postgres local simulado (com um `auth` de mentira), o que reduz erros mas **não substitui** a sua confirmação no Supabase. Dart e Flutter o Claude nunca roda: o resultado de `dart test` e `flutter test` é sempre o que você cola na conversa. O que não foi conferido está listado na seção 11.
 
@@ -47,12 +47,12 @@
 
 | Pronto e validado por você | Falta |
 |---|---|
-| Banco completo: escalar, presença, trocas, convites, cadastro e gestão, permissões e leitura (RLS); área do administrador no app com escala por missa e consulta de pendências em atraso | Gestão de pessoas (ativar/desativar e papéis) |
+| Banco completo: escalar, presença, trocas, convites, cadastro e gestão, permissões e leitura (RLS), **escala livre** (a própria pessoa se escala e sai); área do administrador no app com escala por missa, pendências em atraso e **gestão de pessoas** | Ajustes menores (seção 11) |
 | Núcleo Dart com as regras e o tradutor de erros do banco | Publicar o app (endereço HTTPS) e fazer o piloto com a turma |
 | Login Google funcionando (testado em navegador e no Flutter) | Teste do Family Link com um menor de verdade |
-| App: login, convite, **Minha escala**, **confirmar presença**, **pedir e cancelar troca**, **trocas abertas e aceitar**, **área do administrador (entrada, convites, locais, missas, escala por missa e pendências em atraso)** | Gestão de pessoas, notificações, iPhone e lojas (adiados) |
+| App: login, convite, **Minha escala**, **confirmar presença**, **pedir e cancelar troca**, **trocas abertas e aceitar**, **área do administrador (entrada, convites, locais, missas com escala livre, escala por missa, pendências em atraso e pessoas)**, **Missas abertas** (entrar na escala) e **Sair da escala** | Notificações, iPhone e lojas (adiados) |
 
-**Números.** 18 arquivos de migração SQL (17 numerados mais o 1b), 16 arquivos de teste SQL e 150 testes de Flutter confirmados em 20/11/2026, além de dezenas de testes de Dart.
+**Números.** 19 arquivos de migração SQL (18 numerados mais o 1b), 17 arquivos de teste SQL, **208 testes de Flutter** e 71 testes do núcleo Dart, todos confirmados por você em 21/11/2026.
 
 **Se você só tem 5 minutos:** leia esta seção e as seções 11 e 12.
 
@@ -77,14 +77,15 @@ escala/                            (raiz do Git; fora de Downloads)
 │   └── test/                         escala_service_test.dart, traducao_erros_test.dart
 ├── escala_app/                  app Flutter (web/PWA)
 │   ├── lib/main.dart, config.dart, formatacao.dart
-│   ├── lib/data/                     repositório (interface, Supabase), ItemEscala, TrocaDisponivel, Local, MissaCadastrada, Coroinha e EscaladoNaMissa
+│   ├── lib/data/                     repositório (interface, Supabase), ItemEscala, TrocaDisponivel, Local, MissaCadastrada, Coroinha, Pessoa e EscaladoNaMissa
 │   ├── lib/telas/                    raiz, convite_page, minha_escala_page, trocas_disponiveis_page,
-│   │                                 admin_page, convites_page, locais_page, missas_page, nova_missa_page, escala_missa_page
+│   │                                 admin_page, convites_page, locais_page, missas_page, nova_missa_page, escala_missa_page,
+│   │                                 pessoas_page, missas_abertas_page
 │   ├── test/                         testes e fakes/
 │   └── env.json                      chaves locais (NÃO vai para o Git)
 ├── supabase/
-│   ├── migrations/                18 migrações (17 numeradas + a 1b), na ordem do nome do arquivo
-│   ├── testes/                    testes SQL 001 a 016
+│   ├── migrations/                19 migrações (18 numeradas + a 1b), na ordem do nome do arquivo
+│   ├── testes/                    testes SQL 001 a 017
 │   └── scripts/                   scripts avulsos, para colar no SQL Editor
 │       ├── admin.exemplo.sql          modelo para criar o primeiro administrador
 │       ├── admin.sql                  o seu (tem e-mail; FORA do Git)
@@ -135,7 +136,7 @@ O `escala_core` (Dart puro) guarda as **regras testáveis** e o **tradutor de er
 | **4. Login Google** | Configuração no Google Cloud e no Supabase, teste com uma página HTML local, pesquisa sobre contas de menores (Family Link). |
 | **5. Distribuição** | Decisão: **app web instalável (PWA)**. Android instala pelo Chrome. iPhone e lojas ficam para depois. |
 | **6. Tradutor de erros** | `traduzirErroDoBanco` no Dart, com teste de contrato que lê as migrações. |
-| **7. App Flutter** | Fatia 1: esqueleto com login. Fatia 2: formulário de convite. Fatia 3: Minha escala e confirmar presença. Fatia 4a: pedir e cancelar troca. Fatia 4b: trocas abertas dos outros e aceitar. Fatia 5a: entrada da **Administração** e **gerar convite**. Fatia 5b: **locais** (listar e cadastrar). Fatia 5c: **missas** (listar). Fatia 5d: **criar missa** (local, data e hora). Fatia 5e: **editar e remover missa**. Fatia 5f: **administrar a escala por missa** (listar coroinhas disponíveis e escalados, adicionar com função livre e remover com confirmação). Fatia 5g: **refinar a escala da missa** (contador de participantes, cabeçalho com data/local em blocos e estado vazio informativo). Fatia 5h: **pendências em atraso** (modelo, repositório, fake, tela, menu administrativo e testes). |
+| **7. App Flutter** | Fatia 1: esqueleto com login. Fatia 2: formulário de convite. Fatia 3: Minha escala e confirmar presença. Fatia 4a: pedir e cancelar troca. Fatia 4b: trocas abertas dos outros e aceitar. Fatia 5a: entrada da **Administração** e **gerar convite**. Fatia 5b: **locais** (listar e cadastrar). Fatia 5c: **missas** (listar). Fatia 5d: **criar missa** (local, data e hora). Fatia 5e: **editar e remover missa**. Fatia 5f: **administrar a escala por missa** (listar coroinhas disponíveis e escalados, adicionar com função livre e remover com confirmação). Fatia 5g: **refinar a escala da missa** (contador de participantes, cabeçalho com data/local em blocos e estado vazio informativo). Fatia 5h: **pendências em atraso** (modelo, repositório, fake, tela, menu administrativo e testes). Fatia 5i: **pessoas** (listar, ativar/desativar, tornar administrador ou coroinha); administradores também podem ser escalados. Fatia 5j: **escala livre** no banco (migration 18), no núcleo (códigos novos) e no app (chave "Escala livre" ao criar/editar a missa). Fatia 6a: **Missas abertas** e **Entrar na escala** (coroinha). Fatia 6b: **Sair da escala** (só para quem se escalou sozinho). |
 | **8. Documentação** | Este documento (PDF e Markdown), atualizado ao fim de cada bloco de telas. |
 
 ---
@@ -156,6 +157,8 @@ O `escala_core` (Dart puro) guarda as **regras testáveis** e o **tradutor de er
 | 10 | **Acesso.** Login pelo Google **mais** um perfil (obtido pelo convite). Sem perfil ativo, a pessoa não vê nada. Todos os membros leem a escala; **escrever só pelas funções**. | RLS e funções |
 | 11 | **Gestão.** Desescalar só missa futura. Remover missa só se não houver escalados. Desativar alguém só se não tiver missas futuras. O sistema **nunca fica sem administrador ativo**. | Funções de gestão |
 | 12 | **Dados de menores.** Guarda-se o mínimo: nome do responsável e a data do consentimento. Sem data de nascimento, telefone ou endereço. | Tabela `dados_responsavel` |
+| 13 | **Escala livre.** O administrador marca a missa como livre (ao criar ou editar). Então qualquer membro ativo pode se escalar sozinho: **sem limite de vagas**, função fixa **"A definir"**, entra **já confirmado**. Só vale até o início da missa; vale a mesma regra de conflito de horário e de "mesma missa duas vezes". | `auto_escalar` |
+| 14 | **Sair da escala.** Quem se escalou sozinho (`auto_escalada`) pode sair até o início da missa, só da própria escalação. Quem foi escalado pelo administrador sai só por **pedir troca**. Desligar a escala livre depois **não tira** quem já entrou. | `auto_desescalar` |
 
 ---
 
@@ -188,6 +191,10 @@ O `escala_core` (Dart puro) guarda as **regras testáveis** e o **tradutor de er
 25. **Data e hora entram por parâmetro na tela de nova missa.** O calendário e o relógio do sistema são difíceis de simular em teste; a tela recebe a função que pergunta (`escolherDataHora`), como o `copiar` da tela de Convites. O padrão usa `showDatePicker` e `showTimePicker`. Criar uma missa **não pede confirmação** (não compromete ninguém; a decisão 19 vale para ações que afetam outras pessoas).
 26. **A hora é a do aparelho; o banco guarda em UTC.** O app envia `inicio.toUtc()` e mostra `toLocal()`. Conferido no navegador: a hora escolhida volta igual na lista. No Table Editor do Supabase a mesma hora aparece em UTC (18:00 em Recife aparece como 21:00).
 
+27. **Escala livre sem limite de vagas, função "A definir", entrada já confirmada, saída até o início da missa.** Respostas dadas por você antes de implementar. Menos regras no banco e na tela; o administrador pode ajustar a função depois removendo e escalando de novo.
+28. **O app lembra quem se escalou sozinho (`auto_escalada`).** É a marca que decide se a pessoa vê **Sair da escala** (entrou sozinha) ou **Pedir troca** (foi escalada pelo administrador). A regra é conferida de novo no banco (`SAIDA_NAO_PERMITIDA`).
+29. **Missas abertas é uma lista filtrada no app.** `missasAbertas()` traz as missas livres futuras e tira aquelas em que a própria pessoa já está; o banco continua sendo a autoridade (`ESCALA_NAO_LIVRE`, `JA_ESCALADO_NA_MISSA`).
+
 ---
 
 ## 6. Banco de dados (Supabase)
@@ -199,8 +206,8 @@ O `escala_core` (Dart puro) guarda as **regras testáveis** e o **tradutor de er
 | `locais` | As igrejas | `id`, `nome` (único) |
 | `perfis` | Quem tem acesso | `id` (igual ao do login), `nome`, `papel` (admin ou coroinha), `ativo` |
 | `dados_responsavel` | Consentimento dos menores | `perfil_id`, `responsavel_nome`, `consentimento_em` |
-| `missas` | As missas | `id`, `inicio`, `local_id` |
-| `escalacoes` | Quem serve em qual missa | `id`, `missa_id`, `coroinha_id`, `funcao`, `status` (pendente ou confirmado), `confirmado_com_atraso`, `periodo` |
+| `missas` | As missas | `id`, `inicio`, `local_id`, `escala_livre` (padrão falso) |
+| `escalacoes` | Quem serve em qual missa | `id`, `missa_id`, `coroinha_id`, `funcao`, `status` (pendente ou confirmado), `confirmado_com_atraso`, `periodo`, `auto_escalada` (padrão falso) |
 | `trocas` | Pedidos de troca | `id`, `escalacao_id`, `status` (aberta, aceita, cancelada), `substituto_id`, `criada_em`, `resolvida_em` |
 | `convites` | Convites de acesso | `id`, `codigo_hash`, `criado_por`, `criado_em`, `expira_em`, `usado_em`, `usado_por`, `exige_responsavel` |
 
@@ -236,8 +243,9 @@ A coluna "Nº" é o número que aparece no cabeçalho de cada arquivo.
 | 15 | `20261115000000_pendentes_em_atraso.sql` | `pendentes_em_atraso` | 014 |
 | 16 | `20261115010000_gestao_escala.sql` | `desescalar`, `definir_ativo`, `definir_papel`, `remover_missa`, `exigir_outro_admin` | 015 |
 | 17 | `20261115020000_escalar_validacoes.sql` | `escalar` valida missa e coroinha (existente e ativo) | 016 |
+| 18 | `20261120210000_escala_livre.sql` | Colunas `escala_livre` e `auto_escalada`; `criar_missa` e `editar_missa` com o parâmetro novo (assinatura trocada: remover e recriar); `auto_escalar` e `auto_desescalar` | 017, 013 (C6 atualizado) |
 
-**Importante:** as migrações **1 a 17 e a 1b já foram aplicadas** no `escala-dev`. Não rode de novo. Para montar um banco novo (ex.: `escala-prod`), rode **todos os arquivos da pasta `migrations/` em ordem** (a 1b é o `20261114120100_conflito_horario.sql`, logo depois da 1).
+**Importante:** as migrações **1 a 18 e a 1b já foram aplicadas** no `escala-dev`. Não rode de novo. Para montar um banco novo (ex.: `escala-prod`), rode **todos os arquivos da pasta `migrations/` em ordem** (a 1b é o `20261114120100_conflito_horario.sql`, logo depois da 1).
 
 ### 6.4 Funções que o app pode chamar
 
@@ -253,11 +261,14 @@ Todas usam o login (`auth.uid()`). Quem não está logado não executa nenhuma.
 | `aceitar_troca(troca)` | membro ativo | Assume a escalação de outra pessoa |
 | `gerar_convite(exige_responsavel)` | admin | Devolve o código (uma única vez) |
 | `resgatar_convite(codigo, nome, responsavel)` | logado sem perfil | Cria o perfil |
-| `criar_local(nome)`, `criar_missa(inicio, local)`, `editar_missa(id, inicio, local)` | admin | Cadastro |
+| `criar_local(nome)` | admin | Cadastra um local |
+| `criar_missa(inicio, local, escala_livre = false)`, `editar_missa(id, inicio, local, escala_livre = null)` | admin | Cadastro; em `editar_missa`, nulo mantém o valor atual |
+| `auto_escalar(missa)` | membro ativo | A própria pessoa se escala numa missa livre (função "A definir", confirmado) |
+| `auto_desescalar(missa)` | titular | A própria pessoa sai, só de uma escalação que ela mesma fez e antes do início |
 | `remover_missa(id)` | admin | Só se não houver escalados |
 | `definir_ativo(perfil, ativo)`, `definir_papel(perfil, papel)` | admin | Gestão de pessoas |
 
-**Contrato da gestão de pessoas (migration 16):** `definir_ativo(p_perfil_id, p_ativo)` e `definir_papel(p_perfil_id, p_papel)` retornam o registro atualizado de `perfis`. Ambas exigem administrador. `p_ativo` não pode ser nulo; `p_papel` aceita somente `admin` ou `coroinha`. Desativar um perfil com escalações em missas futuras é bloqueado (`TEM_ESCALACOES_FUTURAS`); antes é necessário desescalar. Desativar ou rebaixar um administrador ativo é bloqueado se ele for o último (`ULTIMO_ADMIN`). O bloqueio é protegido por trava dos administradores ativos. A migration não cria uma RPC de listagem de perfis; a consulta para a futura tela administrativa ainda precisa ser definida conforme as políticas RLS.
+**Contrato da gestão de pessoas (migration 16):** `definir_ativo(p_perfil_id, p_ativo)` e `definir_papel(p_perfil_id, p_papel)` retornam o registro atualizado de `perfis`. Ambas exigem administrador. `p_ativo` não pode ser nulo; `p_papel` aceita somente `admin` ou `coroinha`. Desativar um perfil com escalações em missas futuras é bloqueado (`TEM_ESCALACOES_FUTURAS`); antes é necessário desescalar. Desativar ou rebaixar um administrador ativo é bloqueado se ele for o último (`ULTIMO_ADMIN`). O bloqueio é protegido por trava dos administradores ativos. A migration não cria uma RPC de listagem de perfis: a tela **Pessoas** lê a tabela `perfis` diretamente, pela política de leitura dos membros.
 | `pendentes_em_atraso(agora)` | admin | Lista para o coordenador cobrar |
 | `eh_membro()`, `eh_admin()` | logado | Usadas também pelas políticas |
 
@@ -279,7 +290,7 @@ O banco devolve o **texto** do erro igual ao código. O Dart traduz para exceç�
 | Grupo | Códigos |
 |---|---|
 | Geral | `NAO_AUTORIZADO` |
-| Escala | `CONFLITO_DE_HORARIO`, `JA_ESCALADO_NA_MISSA`, `MISSA_JA_COMECOU`, `MISSA_INEXISTENTE`, `COROINHA_INEXISTENTE`, `COROINHA_INATIVO`, `ESCALACAO_NAO_ENCONTRADA` |
+| Escala | `CONFLITO_DE_HORARIO`, `JA_ESCALADO_NA_MISSA`, `MISSA_JA_COMECOU`, `MISSA_INEXISTENTE`, `COROINHA_INEXISTENTE`, `COROINHA_INATIVO`, `ESCALACAO_NAO_ENCONTRADA`, `ESCALA_NAO_LIVRE`, `SAIDA_NAO_PERMITIDA` |
 | Trocas | `TROCA_JA_ABERTA`, `TROCA_JA_RESOLVIDA`, `SUBSTITUTO_INVALIDO`, `TROCA_NAO_ENCONTRADA` |
 | Convites | `CONVITE_INVALIDO`, `CONVITE_USADO`, `CONVITE_EXPIRADO`, `JA_TEM_PERFIL`, `NOME_INVALIDO`, `RESPONSAVEL_OBRIGATORIO` |
 | Cadastro | `LOCAL_DUPLICADO`, `LOCAL_INEXISTENTE`, `HORARIO_INVALIDO` |
@@ -328,7 +339,7 @@ Os testes 013, 015 e 016 usam um ajudante temporário, `pg_temp.tentar(sql, uuid
 |---|---|
 | `lib/src/dominio.dart` | Constantes `duracaoMissa` (1h) e `prazoConfirmacao` (2h); modelos `Coroinha`, `Missa`, `Escalacao`, `Troca`, `Convite`; a exceção-base `RegraDeNegocio` e as exceções do núcleo |
 | `lib/src/escala_service.dart` | `EscalaService`: `escalar`, `confirmar`, `pendentesEmAtraso`, `abrirTroca`, `aceitarTroca`, `cancelarTroca`, `cancelarTrocaComoAdmin`, `gerarConvite` |
-| `lib/src/erros_do_banco.dart` | As 18 exceções de códigos do banco, `ErroDesconhecido` e a função `traduzirErroDoBanco` |
+| `lib/src/erros_do_banco.dart` | As 20 exceções de códigos do banco (incluindo `EscalaNaoLivre` e `SaidaNaoPermitida`), `ErroDesconhecido` e a função `traduzirErroDoBanco` |
 | `test/escala_service_test.dart` | Testes das regras do núcleo (a numeração vai de 1 a 27b, com extras) |
 | `test/traducao_erros_test.dart` | Um teste por código, de robustez e **de contrato** |
 
@@ -336,7 +347,7 @@ Os testes 013, 015 e 016 usam um ajudante temporário, `pg_temp.tentar(sql, uuid
 
 **Divergências conhecidas entre o Dart e o banco.** O Dart **não** tem: resgate de convite, cadastro de missas, gestão de pessoas, validação de coroinha ativo, permissão por login. Decisão: **não duplicar a administração no Dart**; ele fica como especificação do núcleo da escala e do tradutor de erros.
 
-**Rodar:** `cd escala_core && dart test`.
+**Rodar:** `cd escala_core && dart test` (71 testes aprovados em 21/11/2026).
 
 ---
 
@@ -357,63 +368,72 @@ Os testes 013, 015 e 016 usam um ajudante temporário, `pg_temp.tentar(sql, uuid
 | `lib/config.dart` | Lê `SUPABASE_URL` e `SUPABASE_KEY` |
 | `lib/formatacao.dart` | `formatarDataMissa`: "dom 22/11 às 18:00" |
 | `lib/data/escala_repository.dart` | A interface (acesso, convite, escala pessoal, confirmar, abrir/cancelar/aceitar troca e administração: gerar convite, locais, missas, escala por missa e pendências em atraso) e o `EstadoAcesso` (semLogin, semPerfil, membro, administrador) |
-| `lib/data/supabase_escala_repository.dart` | A versão real |
-| `lib/data/item_escala.dart` | Uma linha da escala (com o id da troca aberta); lê o JSON; ordena por horário |
+| `lib/data/supabase_escala_repository.dart` | A versão real. `missasAbertas()` tira as missas em que a pessoa já está; `coroinhas()` lista todos os perfis ativos (administradores também) |
+| `lib/data/item_escala.dart` | Uma linha da escala (com o id da missa, o id da troca aberta e a marca `autoEscalada`); lê o JSON (`missa_id` e `auto_escalada` vêm da escalação, não da missa embutida); ordena por horário |
 | `lib/data/troca_disponivel.dart` | Um pedido de troca de outra pessoa; tira os próprios e as missas já começadas; ordena |
 | `lib/data/local.dart` | Um local (igreja ou capela); lê o JSON; ordena por nome, sem diferenciar maiúsculas |
-| `lib/data/missa_cadastrada.dart` | Uma missa como o administrador a vê (horário e local); lê o JSON; ordena por horário. Chama-se `MissaCadastrada` porque `Missa` já existe no `escala_core` |
-| `lib/data/coroinha.dart` | Modelo de coroinha disponível para seleção na administração da escala por missa |
+| `lib/data/missa_cadastrada.dart` | Uma missa como o administrador a vê (horário, local e `escalaLivre`); lê o JSON; ordena por horário. Chama-se `MissaCadastrada` porque `Missa` já existe no `escala_core` |
+| `lib/data/coroinha.dart` | Modelo de pessoa disponível para seleção na administração da escala por missa (coroinha ou administrador; o nome é histórico) |
+| `lib/data/pessoa.dart` | Uma pessoa na tela de gestão (nome, papel, ativo); lê o JSON; ordena por nome |
 | `lib/data/escalado_na_missa.dart` | Modelo de uma escalação da missa: id da escalação, id e nome do coroinha e função; converte JSON e ordena pelo nome |
 | `lib/data/pendencia_em_atraso.dart` | Modelo de uma escalação pendente dentro da janela de atraso; converte JSON, ajusta o horário para o fuso local e ordena por missa e nome |
 | `lib/telas/raiz.dart` | Decide: login, convite ou Minha escala (como membro ou como administrador) |
 | `lib/telas/convite_page.dart` | Formulário de convite (código, nome, responsável) |
-| `lib/telas/minha_escala_page.dart` | Próximas missas, prazo, confirmar, pedir e cancelar troca, e os botões **Trocas abertas** e **Administração** (só para administradores) |
+| `lib/telas/minha_escala_page.dart` | Próximas missas, prazo, confirmar, pedir e cancelar troca, **Sair da escala** (só em missa que a própria pessoa escolheu), botão **Missas abertas** e os botões **Trocas abertas** e **Administração** (só para administradores) |
+| `lib/telas/missas_abertas_page.dart` | (Coroinha) Missas livres futuras em que a pessoa ainda não está, com **Entrar na escala** |
 | `lib/telas/trocas_disponiveis_page.dart` | Pedidos de troca dos outros, com **Aceitar** |
-| `lib/telas/admin_page.dart` | Menu da área de administração (Convites, Locais, Missas e Pendências em atraso) |
+| `lib/telas/admin_page.dart` | Menu da área de administração (Convites, Locais, Missas, Pendências em atraso e Pessoas) |
+| `lib/telas/pessoas_page.dart` | (Admin) Lista as pessoas e permite ativar/desativar e tornar administrador ou coroinha, com confirmação nas ações que pesam |
 | `lib/telas/convites_page.dart` | (Admin) Gera o convite: "menor de idade" marcado por padrão, código mostrado uma vez, botão de copiar |
 | `lib/telas/locais_page.dart` | (Admin) Lista os locais e cadastra um novo; recarrega a lista depois de criar |
 | `lib/telas/missas_page.dart` | (Admin) As próximas missas (horário e local), botão **Adicionar missa**, menu **Editar / Remover** e toque na linha para abrir a administração da escala daquela missa |
-| `lib/telas/escala_missa_page.dart` | (Admin) Mostra os coroinhas escalados e suas funções; permite adicionar um coroinha ainda não escalado com função em texto livre e remover uma escalação com confirmação |
+| `lib/telas/escala_missa_page.dart` | (Admin) Mostra os coroinhas escalados e suas funções; permite adicionar uma pessoa ativa (coroinha **ou administrador**) ainda não escalada, com função em texto livre, e remover uma escalação com confirmação; recarrega com `ignore()` (lição 14) |
 | `lib/telas/pendencias_em_atraso_page.dart` | (Admin) Lista as escalações ainda pendentes a partir de duas horas antes da missa e antes do início; tem estados de carregamento, vazio e erro, botão de atualizar e gesto de atualização |
-| `lib/telas/nova_missa_page.dart` | (Admin) Cadastra uma missa: local (lista de locais), data e hora (seletores do sistema, por parâmetro, abertos no horário atual ao editar) e **Salvar missa**; fecha devolvendo `true`. Com uma missa recebida por parâmetro vira **Editar missa** (local e horário atuais já escolhidos, botão **Salvar alterações**) |
+| `lib/telas/nova_missa_page.dart` | (Admin) Cadastra uma missa: local (lista de locais), data e hora (seletores do sistema, por parâmetro, abertos no horário atual ao editar) a chave **Escala livre** e **Salvar missa**; fecha devolvendo `true`. Com uma missa recebida por parâmetro vira **Editar missa** (local e horário atuais já escolhidos, botão **Salvar alterações**) |
 
 ### 8.3 O que as telas fazem hoje
 
 - **Login:** botão **Entrar com Google**. O método `entrarComGoogle()` envia `queryParams: {'prompt': 'select_account'}` ao fluxo OAuth, solicitando ao Google a tela de escolha de conta.
 - **Convite:** quem entrou mas não tem perfil digita código, nome e (se menor) o responsável. Erros aparecem em português. Há **Usar outra conta**.
-- **Minha escala:** próximas missas com data, local, função e situação. Pendente tem **Confirmar presença** e o prazo; depois do prazo o texto avisa que ainda dá para confirmar. **Pedir troca** (com aviso de que todos poderão ver) e, com a troca aberta, a etiqueta **Troca aberta** e o botão **Cancelar pedido de troca**. **Tentar de novo** se a carga falhar. Botões **Trocas abertas**, **Administração** (só aparece para administradores) e **Sair**.
+- **Minha escala:** próximas missas com data, local, função e situação. Pendente tem **Confirmar presença** e o prazo; depois do prazo o texto avisa que ainda dá para confirmar. **Pedir troca** (com aviso de que todos poderão ver) e, com a troca aberta, a etiqueta **Troca aberta** e o botão **Cancelar pedido de troca**. **Tentar de novo** se a carga falhar. Quando foi a própria pessoa que se escalou, o cartão mostra **Você se escalou** e **Sair da escala** (com confirmação), no lugar de **Pedir troca**. Botão flutuante **Missas abertas**. Botões **Trocas abertas**, **Administração** (só aparece para administradores) e **Sair**.
 - **Trocas abertas:** pedidos de troca de outras pessoas (data, local, função e quem pediu). **Aceitar** pede confirmação e avisa que a presença já fica confirmada. Os erros aparecem em primeira pessoa ("Você já está escalado em uma missa com horário próximo."). Se a troca mudou enquanto a pessoa olhava, a lista é atualizada. Ao voltar, a escala é recarregada.
-- **Administração:** menu com **Convites**, **Locais**, **Missas** e **Pendências em atraso**. Só administradores veem o botão; o banco confere o papel em cada ação.
+- **Missas abertas:** lista as missas livres futuras em que a pessoa ainda não está (data, local). **Entrar na escala** escala a pessoa na hora ("Você entrou na escala."). Se a missa mudou enquanto a pessoa olhava (já não é livre, já começou, já está nela), a mensagem aparece e a lista é recarregada. Vazio: "Nenhuma missa aberta no momento."
+- **Pessoas:** lista com nome e papel; menu para ativar/desativar e para tornar administrador ou coroinha. Desativar e mudar o papel pedem confirmação. Erros do banco (último administrador, escalações futuras) aparecem traduzidos.
+- **Administração:** menu com **Convites**, **Locais**, **Missas**, **Pendências em atraso** e **Pessoas**. Só administradores veem o botão; o banco confere o papel em cada ação.
 - **Pendências em atraso:** consulta `pendentes_em_atraso` pelo `EscalaRepository`, sem enviar horário do aparelho: a RPC usa `now()` do banco. Mostra nome, função e horário da missa; contempla carregamento, lista vazia, erro com nova tentativa, atualização pelo botão e gesto de puxar para atualizar. A janela é inclusiva no limite de duas horas antes e termina imediatamente antes do início da missa. A autorização é conferida no banco por `eh_admin()`; a tela não substitui a proteção da RPC.
 - **Convites:** a opção "Menor de idade (exige o nome do responsável)" vem **marcada**; desmarcar gera um convite de adulto. O código aparece uma única vez (vale 7 dias) com o botão **Copiar código**.
 - **Locais:** lista em ordem alfabética, campo **Nome do local** e botão **Adicionar local**. Nome em branco é recusado na tela; nome repetido mostra "Já existe um local com esse nome." e mantém o que foi digitado.
-- **Missas:** as próximas missas (a partir de agora), em ordem de horário, com o local. O botão **Adicionar missa** abre a tela **Nova missa**: escolher o **local**, a **data e hora** e **Salvar missa**. Sem local escolhido ou sem data, a tela avisa; sem nenhum local cadastrado, pede para cadastrar um antes. Ao salvar, volta para a lista, que se recarrega. Cada missa tem um menu **⋮** com **Editar** e **Remover**. **Editar** reabre a mesma tela com o local e o horário atuais; mover o horário é permitido mesmo com coroinhas escalados, e só o conflito de horário bloqueia (mensagem do banco). **Remover** pede confirmação; se a missa tiver coroinhas escalados, o banco impede a remoção e a tela mostra a mensagem traduzida. Se só o recarregamento falhar depois de remover, a tela mostra a falha de carga e não diz que a remoção falhou.
-- **Escala da missa:** tocar na linha de uma missa abre `EscalaMissaPage`. A tela mostra data, horário e local, lista os escalados com nome e função e permite atualizar a lista. O cabeçalho da lista mostra a quantidade de participantes (com singular/plural); o cartão da missa separa visualmente data/horário e local. Quando não há ninguém escalado, aparece um estado vazio explicativo. **Adicionar coroinha** consulta os coroinhas e as escalações atuais, exclui da seleção quem já está naquela missa e abre um formulário com seleção de pessoa e campo de função livre. A função é obrigatória e tem espaços das pontas removidos. Ao salvar, chama `escalar` e recarrega a lista. A remoção usa o id da escalação, pede confirmação e chama `desescalar`; em caso de sucesso, a lista é recarregada. Os erros de regra do banco são apresentados na tela. A proteção contra repetição na mesma missa, conflito de horário, coroinha inativo e missa já iniciada continua sendo responsabilidade das funções do banco.
+- **Missas:** as próximas missas (a partir de agora), em ordem de horário, com o local. O botão **Adicionar missa** abre a tela **Nova missa**: escolher o **local**, a **data e hora** e **Salvar missa**. Sem local escolhido ou sem data, a tela avisa; sem nenhum local cadastrado, pede para cadastrar um antes. Ao salvar, volta para a lista, que se recarrega. A chave **Escala livre** ("Os coroinhas podem se escalar sozinhos nesta missa.") fica na criação e na edição; na lista, a missa livre mostra "Local · Escala livre". Cada missa tem um menu **⋮** com **Editar** e **Remover**. **Editar** reabre a mesma tela com o local e o horário atuais; mover o horário é permitido mesmo com coroinhas escalados, e só o conflito de horário bloqueia (mensagem do banco). **Remover** pede confirmação; se a missa tiver coroinhas escalados, o banco impede a remoção e a tela mostra a mensagem traduzida. Se só o recarregamento falhar depois de remover, a tela mostra a falha de carga e não diz que a remoção falhou.
+- **Escala da missa:** tocar na linha de uma missa abre `EscalaMissaPage`. A tela mostra data, horário e local, lista os escalados com nome e função e permite atualizar a lista. O cabeçalho da lista mostra a quantidade de participantes (com singular/plural); o cartão da missa separa visualmente data/horário e local. Quando não há ninguém escalado, aparece um estado vazio explicativo. A lista de quem pode ser escalado inclui também os administradores. **Adicionar coroinha** consulta os coroinhas e as escalações atuais, exclui da seleção quem já está naquela missa e abre um formulário com seleção de pessoa e campo de função livre. A função é obrigatória e tem espaços das pontas removidos. Ao salvar, chama `escalar` e recarrega a lista. A remoção usa o id da escalação, pede confirmação e chama `desescalar`; em caso de sucesso, a lista é recarregada. Os erros de regra do banco são apresentados na tela. A proteção contra repetição na mesma missa, conflito de horário, coroinha inativo e missa já iniciada continua sendo responsabilidade das funções do banco.
 - **Validação manual das fatias 5f e 5g:** você confirmou que a navegação da lista de missas para a escala abre corretamente; o formulário carrega e permite selecionar coroinha e função; uma escalação de teste foi gravada e apareceu com nome/função; ao removê-la e confirmar, desapareceu da lista. Depois do refinamento visual, `flutter analyze` terminou sem problemas. As operações de adicionar e remover já haviam sido conferidas manualmente; a última alteração foi visual e o contador deriva da lista carregada. O teste unitário de `EscaladoNaMissa` também passou. Não registrar como executado um `flutter test` completo desta fatia, pois isso não foi confirmado nesta etapa.
 
-### 8.4 Testes do app (150)
+### 8.4 Testes do app (208)
 
 | Arquivo | Rótulos | O que cobre |
 |---|---|---|
 | `raiz_test.dart` | R1 a R11 | Carregando, login, convite, escala, erro, troca de tela, sair, botão Administração (só administrador) |
 | `convite_page_test.dart` | V1 a V9 | Campos, envio, validação, erro de regra, progresso, outra conta |
-| `item_escala_test.dart` | M1 a M8 | Leitura do JSON, status, troca aberta (e o id dela), ordenação, prazo |
+| `item_escala_test.dart` | M1 a M10 | Leitura do JSON, status, troca aberta (e o id dela), ordenação, prazo, id da missa (M9) e marca de auto-escalada (M10) |
 | `troca_disponivel_test.dart` | TD1 a TD5 | Leitura, sem os próprios pedidos, sem missas começadas, ordenação |
 | `formatacao_test.dart` | F1 a F3 | Formato da data |
-| `minha_escala_page_test.dart` | P1 a P26 | Lista, confirmar, prazo, pedir e cancelar troca, ir para as trocas abertas, botão Administração, erros, sair |
+| `minha_escala_page_test.dart` | P1 a P34 | Lista, confirmar, prazo, pedir e cancelar troca, ir para as trocas abertas, botão Administração, erros, sair; **Missas abertas** (P27, P28); **Sair da escala**: botão só para quem se escalou, confirmação, sair e recarregar, "Agora não", erro de regra (P29 a P34) |
 | `trocas_disponiveis_page_test.dart` | TP1 a TP12 | Lista, aviso de aceite, mensagens em primeira pessoa, atualização, bloqueio do botão |
-| `admin_page_test.dart` | AD1 a AD5 | Menu da administração; abrir Convites, Locais e Missas; abrir Pendências em atraso |
+| `admin_page_test.dart` | AD1 a AD6 | Menu da administração; abrir Convites, Locais e Missas; abrir Pendências em atraso; abrir Pessoas |
 | `pendencia_em_atraso_test.dart` | PE1 a PE4 | Conversão do JSON, horário local e ordenação das pendências |
 | `pendencias_em_atraso_page_test.dart` | PA1 a PA5 | Lista vazia, dados dos coroinhas, erro de carga, botão atualizar e recuperação após falha |
 | `convites_page_test.dart` | CV1 a CV9 | Opção de menor, código, copiar, erros, bloqueio durante a geração, novo código substitui o antigo |
 | `local_test.dart` | LC1 a LC3 | Leitura do JSON, ordem alfabética sem diferenciar maiúsculas, lista vazia |
 | `locais_page_test.dart` | LO1 a LO9 | Lista, vazio, adicionar (sem espaços nas pontas, limpa o campo, recarrega), nome em branco, erro de regra mantém o texto, erro genérico, bloqueio do botão, falha ao carregar, **guarda**: se só a recarga falhar, não diz que a criação falhou |
-| `missa_cadastrada_test.dart` | MC1 a MC3 | Leitura do JSON (horário no mesmo instante), ordem por horário, lista vazia |
+| `missa_cadastrada_test.dart` | MC1 a MC5 | Leitura do JSON (horário no mesmo instante), ordem por horário, lista vazia, `escala_livre` (e padrão falso se faltar) |
+| `pessoa_test.dart` | PS1 a PS4 | Leitura do JSON, papel, ordenação por nome, lista vazia |
+| `pessoas_page_test.dart` | PG1 a PG17 | Lista, ativar/desativar (com confirmação ao desativar), mudar papel (com confirmação), erros de regra e genérico, bloqueio durante a ação, falha ao carregar, guarda de recarga |
+| `missas_abertas_page_test.dart` | AB1 a AB10 | Lista, vazio, falha ao carregar com "Tentar de novo", entrar (mensagem de sucesso, recarga), botão bloqueado durante a ação, erros que recarregam a lista (não é mais livre, já começou, já está, missa inexistente) |
 | `escalado_na_missa_test.dart` | EM1 a EM3 | Leitura da escalação, ordenação alfabética pelo nome e lista vazia |
-| `missas_page_test.dart` | MP1 a MP16 | Lista (horário e local), vazio, indicador de carga, falha ao carregar com "Tentar de novo", botão Adicionar missa; menu Editar e Remover, edição (local e horário atuais, novo horário, sem mudar nada, conflito de horário), remoção (confirmação, confirmar, Voltar, missa com escalados, erro genérico) e **guarda**: se só a recarga falhar, não diz que a remoção falhou |
-| `nova_missa_page_test.dart` | NM1 a NM14 | Campos, horário escolhido, avisos (sem local, sem data), salvar com horário e local e fechar, erro de regra, erro genérico, bloqueio do botão, sem locais, falha ao carregar locais, o caminho completo a partir da lista, e **o seletor de data e hora recebe o horário atual** (o da missa ao editar; nada ao criar; o último escolhido ao escolher de novo) |
+| `escala_missa_page_test.dart` | EQ1 a EQ15 | Escala da missa: lista e contagem, vazio, carga e falha com "Tentar novamente"; retirar (confirmação com o nome, confirmar, Cancelar, erro de regra, erro genérico) e **guarda**: se só a recarga falhar, não diz que a retirada falhou; adicionar (só quem ainda não está escalado, função sem espaços nas pontas, sem coroinha disponível, validações do diálogo, conflito de horário sem recarregar, botão bloqueado durante o envio) |
+| `missas_page_test.dart` | MP1 a MP18 | Lista (horário e local), vazio, indicador de carga, falha ao carregar com "Tentar de novo", botão Adicionar missa; menu Editar e Remover, edição (local e horário atuais, novo horário, sem mudar nada, conflito de horário), remoção (confirmação, confirmar, Voltar, missa com escalados, erro genérico) e **guarda**: se só a recarga falhar, não diz que a remoção falhou; missa livre aparece marcada na lista e a chave chega pronta à edição (MP17, MP18) |
+| `nova_missa_page_test.dart` | NM1 a NM16 | Campos, horário escolhido, avisos (sem local, sem data), salvar com horário e local e fechar, erro de regra, erro genérico, bloqueio do botão, sem locais, falha ao carregar locais, o caminho completo a partir da lista, e **o seletor de data e hora recebe o horário atual** (o da missa ao editar; nada ao criar; o último escolhido ao escolher de novo); a chave **Escala livre** (criar e editar) vai para o repositório (NM15, NM16) |
 
-**Rodar:** `cd escala_app && flutter test`. O total confirmado no terminal em 20/11/2026 foi de **150 testes aprovados**. A contagem correta da rodada foi: **144 testes já existentes + PA1 a PA5 (cinco testes da tela de pendências) + AD5 (um teste adicional do menu administrativo) = 150**. Os testes foram construídos e executados durante o desenvolvimento conjunto; não há cinco testes pendentes de identificação. A tabela resume os grupos e rótulos, enquanto o total oficial é o informado pelo comando completo.
+**Rodar:** `cd escala_app && flutter test`. O total confirmado no terminal em 21/11/2026 foi de **208 testes aprovados**. Histórico: 150 (20/11) → 160 (tela de escala da missa, EQ1 a EQ15, e retirada do teste do fake) → 182 (Pessoas) → 188 → 200 (Missas abertas e escala livre) → **208** (Sair da escala: M9, M10 e P29 a P34). Eu anunciei 209 por erro de conta; o comando completo informou 208, e vale o que o comando informa (lição 13). A contagem correta da rodada foi: **144 testes já existentes + PA1 a PA5 (cinco testes da tela de pendências) + AD5 (um teste adicional do menu administrativo) = 150**. Os testes foram construídos e executados durante o desenvolvimento conjunto; não há cinco testes pendentes de identificação. A tabela resume os grupos e rótulos, enquanto o total oficial é o informado pelo comando completo.
 
 ### 8.5 Como abrir o app
 
@@ -615,33 +635,36 @@ Com o app aberto como administrador:
 
 ## 11. Pendências e lacunas conhecidas
 
-**Revisão de 20/11/2026.** Conferido: a hora das missas é enviada ao banco em UTC (`toUtc().toIso8601String()`) e lida de volta em horário local; o `env.json` guarda uma chave *publishable* (a pública, como deve ser). A funcionalidade de pendências em atraso foi validada com a RPC e o teste SQL 014 já executado; a tela também foi aberta e conferida no app com a conta administradora. Em 20/11/2026, `flutter analyze` não apontou problemas e os 150 testes do app passaram (144 anteriores + PA1–PA5 + AD5). A validação manual com uma segunda conta não foi feita; a autorização de usuário comum é coberta pelo teste SQL D1 (`NAO_AUTORIZADO`). A migration 16 e o teste SQL 015 já cobrem as operações de gestão de escala e pessoas no banco; a tela Flutter de gestão de pessoas ainda não foi implementada.
+**Revisão de 20/11/2026.** Conferido: a hora das missas é enviada ao banco em UTC (`toUtc().toIso8601String()`) e lida de volta em horário local; o `env.json` guarda uma chave *publishable* (a pública, como deve ser). A funcionalidade de pendências em atraso foi validada com a RPC e o teste SQL 014 já executado; a tela também foi aberta e conferida no app com a conta administradora. Em 20/11/2026, `flutter analyze` não apontou problemas e os 150 testes do app passaram (144 anteriores + PA1–PA5 + AD5). A validação manual com uma segunda conta não foi feita; a autorização de usuário comum é coberta pelo teste SQL D1 (`NAO_AUTORIZADO`). A migration 16 e o teste SQL 015 cobrem as operações de gestão de escala e pessoas no banco.
+
+**Revisão de 21/11/2026.** Entraram a tela **Pessoas** (conferida no navegador: ativar e desativar funcionaram), a **escala livre** (migration 18, testes SQL 017 e 013 atualizado, auditoria de segurança sem achados) e as telas **Missas abertas** e **Sair da escala** (conferidas no navegador). `dart analyze` e `flutter analyze` sem problemas; 208 testes do app e 71 do núcleo aprovados.
 
 ### Alta prioridade (antes de usar com a turma)
 
 | Item                          | Detalhe                                                                                                                                                                                                                                     |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Teste do Family Link**      | Nenhuma conta de menor supervisionada foi testada. Fazer no **piloto**, com o responsável presente. Plano B: login por e-mail e senha.                                                                                                      |
-| **Organização do projeto** | As pastas já são irmãs (`escala_app` e `escala_core`) e foram reorganizadas em 18/11/2026 com o `organizar_projeto.sh` (`docs/`, `supabase/scripts/`, `ferramentas/`). **Falta** confirmar que a pasta é um repositório **Git**, com o `.gitignore` da raiz, e fazer o commit. |
 | **Publicar o app**            | Hospedagem gratuita de páginas estáticas, endereço HTTPS, e acrescentar esse endereço no Google e no Supabase.                                                                                                                              |
 | **Produção separada**         | Criar `escala-prod`, rodar as migrações em ordem, **nunca** os testes. Rotina de exportação de dados (plano gratuito sem backup diário e com pausa por inatividade).                                                                        |
 | **Apagar um coroinha (LGPD)** | Hoje `escalacoes.coroinha_id` e `trocas.substituto_id` impedem apagar quem tem histórico. Decidir: anonimizar ou apagar em cascata.                                                                                                         |
 
 ### Média prioridade
 
-- **Área do administrador no app**: administração da escala por missa e consulta de pendências em atraso estão implementadas e conferidas manualmente. A gestão de pessoas ainda falta na interface Flutter; no banco, `definir_ativo` e `definir_papel` já existem e são cobertas pelo teste SQL 015. Também falta definir uma consulta segura para listar todos os perfis, pois a migration 16 não cria uma RPC de listagem.
+- **Área do administrador no app**: completa (convites, locais, missas com escala livre, escala por missa, pendências em atraso e pessoas). Ao tornar alguém administrador, a função dele ainda é digitada à mão em cada escalação.
+- **Função em branco ao escalar**: o administrador não pode deixar a função em branco para virar "A definir", como na escala livre (oferecido, ainda não decidido).
 - **Notificações** (fase 2): aviso ao coordenador a 2h da missa, avisos de troca e de mudança de horário.
 - **Função vazia ou nula** ao escalar ainda devolve erro técnico (`FUNCAO_INVALIDA`); a tela nova impede função vazia no formulário, mas o banco ainda deve manter sua própria validação.
 - **Escalar em missa que já começou** é permitido (decisão em aberto).
 - **Raiz sem "Tentar de novo"**: se a verificação de acesso falhar, a tela só mostra o erro.
 - **A lista pisca** ao recarregar depois de confirmar.
 - **Missa em andamento some da lista** (o filtro é "a partir de agora").
-- **O repositório do Supabase não tem teste automático** (só verificação manual; as consultas aninhadas da escala e das trocas foram conferidas à mão).
+- **O repositório do Supabase não tem teste automático** (só verificação manual; as consultas aninhadas da escala, das trocas e das missas abertas foram conferidas à mão). Em 21/11 isso mostrou o custo: um texto de `select` cortado só apareceu no navegador (lição 21).
+- **Nome `Coroinha` no app**: o modelo `lib/data/coroinha.dart` já representa também administradores; renomear (como `Pessoa`) é uma limpeza pendente.
 - **O app não avisa antes** que um pedido de troca vai conflitar com a sua escala: você só descobre ao tocar em **Aceitar**.
 - **Aceite simultâneo** (dois celulares ao mesmo tempo) só foi coberto por testes em sequência e pelo bloqueio de linha no banco; falta um teste real com dois aparelhos.
 - **Todo membro vê os nomes de todos** (necessário para a troca, mas são nomes de menores).
 - **Locais só se cadastram no app**: renomear ou remover um local não tem função no banco (só pelo painel). A lista ordena sem tratar acentos ("Égua" viria depois de "Z").
-- **Recarga que falha rápido**: o `_recarregar` da `MinhaEscalaPage` e da `TrocasDisponiveisPage` não usa `Future.ignore()` como a `LocaisPage`. Se o repositório falhar antes de a tela começar a ouvir, o Flutter trata como erro não capturado. Falta um teste de guarda parecido com o LO9 nessas telas.
+- **Recarga que falha rápido**: o `_recarregar` da `MinhaEscalaPage` e da `TrocasDisponiveisPage` não usa `Future.ignore()` como a `LocaisPage`. Se o repositório falhar antes de a tela começar a ouvir, o Flutter trata como erro não capturado. Falta um teste de guarda parecido com o LO9 nessas telas (vale também para a `MissasAbertasPage`, conferir). (A `EscalaMissaPage` já tem o `ignore()` e o teste de guarda EQ10.)
 
 - **Mensagem genérica repetida** ("Algo deu errado. Tente de novo.") em 7 telas: candidata a uma função única, com teste. *(revisão)*
 - **README do `escala_app`** era o texto padrão do Flutter; o `organizar_projeto.sh` troca por um README próprio. *(revisão)*
@@ -666,12 +689,14 @@ iPhone (login em app instalado precisa de teste num aparelho real), Google Play 
 
 Ordem combinada:
 
-1. **Organizar:** ~~pasta fora de `Downloads`~~ **feito**; ~~estrutura de pastas~~ **reorganizada** (`organizar_projeto.sh`); falta confirmar o **Git** (repositório, `.gitignore` da raiz e primeiro commit) e colocar este documento em `docs/`.
+1. ~~**Organizar:** pasta fora de `Downloads`, estrutura de pastas e Git (repositório, `.gitignore` da raiz e commits)~~ **feito**.
 2. ~~**Trocas no app**~~ **Feito:** pedir, cancelar, ver as trocas abertas e aceitar.
-3. **Área do administrador no app**, em partes: ~~entrada da área e **gerar convite**~~ **feito**; ~~**locais**~~ **feito**; **missas**: ~~listar~~ **feito**, ~~criar~~ **feito**, ~~**editar e remover**~~ **feito**; ~~**escalar e desescalar por missa**~~ **feito e conferido manualmente**; ~~**pendências em atraso**~~ **feito: RPC, tela, menu e testes; tela conferida no app com a conta administradora**; **gestão de pessoas**: próximo passo, integrar `definir_ativo` e `definir_papel` e criar a listagem administrativa após conferir as políticas RLS da tabela `perfis`. O banco já tem as funções necessárias para a escala, pendências e alterações de perfil (exceto a listagem de perfis e editar/remover local).
+3. **Área do administrador no app**, em partes: ~~entrada da área e **gerar convite**~~ **feito**; ~~**locais**~~ **feito**; **missas**: ~~listar~~ **feito**, ~~criar~~ **feito**, ~~**editar e remover**~~ **feito**; ~~**escalar e desescalar por missa**~~ **feito e conferido manualmente**; ~~**pendências em atraso**~~ **feito: RPC, tela, menu e testes; tela conferida no app com a conta administradora**; ~~**gestão de pessoas**~~ **feito**; ~~**escala livre** (administrador libera, coroinha entra e sai)~~ **feito**. O banco ainda não tem editar/remover local.
 4. **Publicar o PWA** e fazer o **piloto** com poucas famílias (inclui o teste do Family Link).
 5. **Fase 2:** notificações.
 6. **Depois:** iPhone e lojas, se fizer sentido.
+
+**Concluído em 21/11/2026:** tela **Pessoas**; administradores passam a poder ser escalados; **escala livre** do banco ao app (chave na missa, **Missas abertas**, **Entrar na escala**, **Sair da escala**). 208 testes do app aprovados.
 
 **Concluído em 20/11/2026:** refinamento visual da tela `EscalaMissaPage` (contador, cabeçalho e estado vazio); correção da seleção de conta Google com `prompt=select_account`; e implementação de **Pendências em atraso** (consulta via RPC, modelo, repositório, fake, tela administrativa e testes). A tela de pendências foi aberta e conferida no app com a conta administradora. `flutter analyze` terminou sem problemas e `flutter test` passou com 150 testes. A escolha de contas Google também foi confirmada no navegador.
 
@@ -690,7 +715,7 @@ Ordem combinada:
 - [ ] Pedir o consentimento do responsável (o convite registra o nome e a data).
 - [ ] Combinar com o coordenador que todos os membros veem os nomes dos outros.
 - [ ] Rotina de exportação dos dados enquanto estiver no plano gratuito.
-- [ ] Repetir `supabase/scripts/auditoria_seguranca.sql` (A1 a A6) depois de cada migração. **Última rodada: 17/11/2026, no `escala-dev` (migrações 1 a 17), tudo como esperado.**
+- [ ] Repetir `supabase/scripts/auditoria_seguranca.sql` (A1 a A6) depois de cada migração. **Última rodada: 20/11/2026, no `escala-dev` (migrações 1 a 18), tudo como esperado.**
 
 **Limites assumidos:** o banco não conhece a idade de ninguém; **não há limite de tentativas** ao digitar códigos de convite (o espaço de códigos, cerca de 1,1 trilhão, e a validade de 7 dias tornam o acerto por tentativa desprezível).
 
@@ -717,6 +742,10 @@ Ordem combinada:
 17. **Um trecho solto confunde.** Ao alterar um arquivo que já existe, mostre o **antes e o depois** (ou devolva o arquivo inteiro). "Acrescente isto no `build`" sem mostrar onde deixou uma dúvida real na tela de Missas.
 18. **Ao trocar linhas de um arquivo, diga também quais ficam.** Na tela de edição, "troque as duas linhas de estado" levou à remoção de duas linhas vizinhas (`_mensagem` e `_salvando`), e os outros erros vieram de caminhos de import e de um `appBar:` perdidos na colagem. Quando o arquivo ficar com mais de um ou dois trechos mudados, o certo é devolver o **arquivo inteiro**, e `dart analyze` é o primeiro passo depois de colar.
 19. **OAuth pode solicitar explicitamente a seleção de conta.** `prompt=select_account` em `queryParams` de `signInWithOAuth` resolveu a reutilização automática da conta no navegador; a confirmação prática deve ser feita no fluxo real do Google.
+20. **Teste escrito depois do código ainda precisa nascer vermelho em algum ponto.** A tela de escala por missa foi feita sem teste; ao escrevê-los depois, o EQ10 falhou e achou o `ignore()` que faltava (lição 14), e o EQ14 falhou por erro do próprio teste (abrir o diálogo já consulta a lista, então o total de cargas não é 1: o que importa é que o erro **não acrescente** uma carga). **Não teste o fake**: o arquivo `escala_por_missa_fake_test.dart` (FA1 a FA5) foi apagado, porque verificava o dublê e não o app.
+
+21. **O `select` do Supabase não tem teste.** O fake devolve o que o teste manda, então um texto de `select` quebrado, ou uma coluna que o app lê e o banco não tem, só aparece no navegador. Em 21/11 o `select` da Minha escala ficou cortado depois de `auto_escalada,` (a linha seguinte se perdeu na edição) e a tela mostrou "Não foi possível carregar a sua escala". A resposta do Supabase (`PGRST100`) dizia exatamente o trecho. Depois de mexer em `supabase_escala_repository.dart`, abra a tela afetada antes de dar a etapa por encerrada.
+22. **O helper do teste e o código precisam concordar sobre o formato do JSON.** No `ItemEscala`, `json[...]` é a escalação (`id`, `missa_id`, `funcao`, `auto_escalada`) e `missa[...]` é o objeto embutido `missas(...)` (só `inicio` e `locais`). Ler `missa['id']` em vez de `json['missa_id']` deu `Null is not a subtype of String` em todo teste que usa o helper `linha()`. Ao acrescentar um campo ao modelo, o helper de teste é o primeiro lugar a atualizar.
 
 ---
 
@@ -738,6 +767,8 @@ Ordem combinada:
 | **Family Link** | Controle parental do Google para contas de crianças |
 | **LGPD** | Lei Geral de Proteção de Dados |
 | **Plano gratuito (Supabase)** | Pausa após cerca de uma semana sem uso e sem backup diário |
+| **Escala livre** | Missa em que o administrador permite que os próprios coroinhas se escalem |
+| **Auto-escalada** | Escalação que a própria pessoa criou numa missa livre; só essa ela pode desfazer sozinha |
 
 ---
 
@@ -759,19 +790,20 @@ Ordem combinada:
 | `010_leitura_rls.sql` | L1 a L5c | Quem lê o quê; escrita direta negada |
 | `011_convite.sql` (v2) | V1 a V10 | Gerar e resgatar convite |
 | `012_convite_adulto.sql` | W1 a W6 | Convite que dispensa o responsável |
-| `013_cadastro_missas.sql` | C1 a C6 | Locais e missas (rótulos repetem os do 006) |
+| `013_cadastro_missas.sql` | C1 a C6 | Locais e missas (rótulos repetem os do 006); o C6 usa as assinaturas novas de `criar_missa` e `editar_missa` (migration 18) |
 | `014_pendentes_em_atraso.sql` | D1 a D4 | Lista de pendentes em atraso |
 | `015_gestao_escala.sql` | E1 a E5 | Desescalar somente antes do início da missa; ativar/desativar perfil; alterar papel; impedir que o sistema fique sem administrador ativo; remover missa somente sem escalados. Inclui os bloqueios de desativação com escalações futuras e de remoção de missa com escalações. |
 | `016_escalar_validacoes.sql` | S1 a S5 | `escalar` valida missa e coroinha |
+| `017_escala_livre.sql` | EL1 a EL8 | EL1/EL2: `criar_missa` e `editar_missa` com e sem a chave (nulo mantém), só admin cria; EL3: `auto_escalar` grava "A definir", confirmado, auto-escalada; EL4: recusas (missa inexistente, não livre, já começou, já escalado, conflito, perfil inativo) sem gravar nada; EL5: sair, entrar de novo, sem limite de vagas; EL6: saída recusada (não escalado, escalada pelo admin, já começou, inativo); EL7: desligar a escala livre mantém quem entrou, que ainda pode sair; EL8: direitos de execução (`anon` não, `authenticated` sim) |
 
 ### 16.2 Testes do núcleo Dart
 
 - `escala_service_test.dart`: regras do núcleo da escala (conflito, presença, trocas, convites, confirmação idempotente, convite com e sem responsável).
-- `traducao_erros_test.dart`: um teste por código do banco, robustez e contrato com as migrações.
+- `traducao_erros_test.dart`: um teste por código do banco (incluindo `ESCALA_NAO_LIVRE` e `SAIDA_NAO_PERMITIDA`), robustez e contrato com as migrações.
 
 ### 16.3 Testes do app Flutter
 
-Veja a tabela da seção 8.4 (150 testes, incluindo EM1 a EM3, AD5 e PA1 a PA5).
+Veja a tabela da seção 8.4 (208 testes, incluindo PS, PG, AB, EQ, PA e as séries novas de M, P, MP, NM e AD).
 
 ### 16.4 Outros arquivos
 

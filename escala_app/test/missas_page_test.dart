@@ -187,7 +187,7 @@ void main() {
       await salvarEdicao(t);
 
       expect(repo.missasEditadas, [
-        (missaId: 'm1', inicio: novo, localId: 'l2'),
+        (missaId: 'm1', inicio: novo, localId: 'l2', escalaLivre: false),
       ]);
       expect(find.text('Editar missa'), findsNothing);
       expect(repo.cargasMissas, 2);
@@ -203,7 +203,12 @@ void main() {
     await salvarEdicao(t);
 
     expect(repo.missasEditadas, [
-      (missaId: 'm1', inicio: DateTime(2026, 11, 22, 18, 0), localId: 'l1'),
+      (
+        missaId: 'm1',
+        inicio: DateTime(2026, 11, 22, 18, 0),
+        localId: 'l1',
+        escalaLivre: false,
+      ),
     ]);
   });
 
@@ -319,4 +324,42 @@ void main() {
       expect(find.text('Não foi possível carregar as missas.'), findsOneWidget);
     },
   );
+
+  final missaLivre = MissaCadastrada(
+    id: 'm2',
+    inicio: DateTime(2026, 11, 29, 18, 0),
+    localId: 'l1',
+    localNome: 'Matriz',
+    escalaLivre: true,
+  );
+
+  testWidgets('MP17: a lista marca as missas com escala livre', (t) async {
+    repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+    repo.missasCadastradas = [missaUm, missaLivre];
+    await t.pumpWidget(MaterialApp(home: MissasPage(repositorio: repo)));
+    await t.pumpAndSettle();
+
+    expect(find.text('Matriz · Escala livre'), findsOneWidget);
+    expect(find.text('Matriz'), findsOneWidget); // a missa que não é livre
+  });
+
+  testWidgets('MP18: editar uma missa livre sem mexer na chave mantém a chave',
+      (t) async {
+    repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+    repo.missasCadastradas = [missaLivre];
+    await t.pumpWidget(MaterialApp(home: MissasPage(repositorio: repo)));
+    await t.pumpAndSettle();
+    await abrirEdicao(t);
+
+    await salvarEdicao(t);
+
+    expect(repo.missasEditadas, [
+      (
+        missaId: 'm2',
+        inicio: DateTime(2026, 11, 29, 18, 0),
+        localId: 'l1',
+        escalaLivre: true,
+      ),
+    ]);
+  });
 }

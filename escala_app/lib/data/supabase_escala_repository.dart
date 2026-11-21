@@ -101,7 +101,7 @@ class SupabaseEscalaRepository implements EscalaRepository {
     final linhas = await _client
         .from('escalacoes')
         .select(
-          'id, funcao, status, confirmado_com_atraso, '
+          'id, missa_id, funcao, status, confirmado_com_atraso, auto_escalada, '
           'missas!inner(inicio, locais(nome)), trocas(id, status)',
         )
         .eq('coroinha_id', usuario.id)
@@ -179,7 +179,7 @@ class SupabaseEscalaRepository implements EscalaRepository {
     // A RLS deixa qualquer membro ler as missas e os locais.
     final linhas = await _client
         .from('missas')
-        .select('id, inicio, local_id, locais(nome)')
+        .select('id, inicio, local_id, escala_livre, locais(nome)')
         .gte('inicio', DateTime.now().toUtc().toIso8601String());
     return MissaCadastrada.listaDeJson(linhas);
   }
@@ -188,11 +188,13 @@ class SupabaseEscalaRepository implements EscalaRepository {
   Future<void> criarMissa({
     required DateTime inicio,
     required String localId,
+    bool escalaLivre = false,
   }) async {
     await _chamarRegra('criar_missa', {
       // O banco guarda em UTC; a hora escolhida é a do aparelho.
       'p_inicio': inicio.toUtc().toIso8601String(),
       'p_local_id': localId,
+      'p_escala_livre': escalaLivre,
     });
   }
 
@@ -201,11 +203,13 @@ class SupabaseEscalaRepository implements EscalaRepository {
     required String missaId,
     required DateTime inicio,
     required String localId,
+    bool escalaLivre = false,
   }) async {
     await _chamarRegra('editar_missa', {
       'p_missa_id': missaId,
       'p_inicio': inicio.toUtc().toIso8601String(),
       'p_local_id': localId,
+      'p_escala_livre': escalaLivre,
     });
   }
 
@@ -288,5 +292,34 @@ class SupabaseEscalaRepository implements EscalaRepository {
       'p_perfil_id': pessoaId,
       'p_papel': papel,
     });
+  }
+
+  @override
+  Future<List<MissaCadastrada>> missasAbertas() async {
+    final meuId = _client.auth.currentUser!.id;
+    final linhas = await _client
+        .from('missas')
+        .select('id, inicio, local_id, escala_livre, locais(nome), '
+            'escalacoes(coroinha_id)')
+        .eq('escala_livre', true)
+        .gte('inicio', DateTime.now().toUtc().toIso8601String());
+    // Tira as missas em que eu já estou escalado.
+    final abertas = linhas.where((linha) {
+      final escalados = (linha['escalacoes'] as List<dynamic>?) ?? const [];
+      return !escalados
+          .cast<Map<String, dynamic>>()
+          .any((e) => e['coroinha_id'] == meuId);
+    }).toList();
+    return MissaCadastrada.listaDeJson(abertas);
+  }
+
+  @override
+  Future<void> entrarNaEscala(String missaId) async {
+    await _chamarRegra('auto_escalar', {'p_missa_id': missaId});
+  }
+
+  @override
+  Future<void> sairDaEscala(String missaId) async {
+    await _chamarRegra('auto_desescalar', {'p_missa_id': missaId});
   }
 }

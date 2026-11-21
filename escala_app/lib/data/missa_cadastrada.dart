@@ -7,11 +7,15 @@ class MissaCadastrada {
   final String localId;
   final String localNome;
 
+  /// Se os coroinhas podem se escalar sozinhos nesta missa.
+  final bool escalaLivre;
+
   const MissaCadastrada({
     required this.id,
     required this.inicio,
     required this.localId,
     required this.localNome,
+    this.escalaLivre = false,
   });
 
   /// Lê uma linha como o Supabase a devolve: a missa com o local embutido.
@@ -22,6 +26,7 @@ class MissaCadastrada {
       inicio: DateTime.parse(json['inicio'] as String).toLocal(),
       localId: json['local_id'] as String,
       localNome: local['nome'] as String,
+      escalaLivre: json['escala_livre'] as bool? ?? false,
     );
   }
 
