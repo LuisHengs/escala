@@ -403,15 +403,10 @@ class _AdicionarCoroinhaDialogState extends State<_AdicionarCoroinhaDialog> {
               decoration: const InputDecoration(
                 labelText: 'Função',
                 hintText: 'Ex.: turiferário',
+                helperText: 'Se ficar em branco, a função será "A definir".',
                 border: OutlineInputBorder(),
               ),
               textCapitalization: TextCapitalization.sentences,
-              validator: (valor) {
-                if (valor == null || valor.trim().isEmpty) {
-                  return 'Informe a função.';
-                }
-                return null;
-              },
             ),
           ],
         ),

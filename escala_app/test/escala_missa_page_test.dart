@@ -273,9 +273,9 @@ void main() {
     expect(find.byType(AlertDialog), findsNothing);
   });
 
-  testWidgets('EQ13: sem escolher coroinha e função, o diálogo cobra os dois', (
-    t,
-  ) async {
+  testWidgets(
+      'EQ13: sem escolher coroinha, o diálogo cobra o coroinha (a função é opcional)',
+      (t) async {
     repo.coroinhasCadastrados = [const Coroinha(id: 'c3', nome: 'Carla')];
     await montar(t);
 
@@ -284,8 +284,38 @@ void main() {
     await t.pumpAndSettle();
 
     expect(find.text('Selecione um coroinha.'), findsOneWidget);
-    expect(find.text('Informe a função.'), findsOneWidget);
+    expect(find.text('Informe a função.'), findsNothing);
     expect(repo.escalacoesCriadas, isEmpty);
+  });
+
+  testWidgets(
+      'EQ16: função em branco é enviada vazia (o banco usa "A definir")',
+      (t) async {
+    repo.coroinhasCadastrados = [const Coroinha(id: 'c3', nome: 'Carla')];
+    await montar(t);
+
+    await abrirAdicionar(t);
+    await escolherCoroinha(t, 'Carla');
+    await t.tap(noDialogo(find.text('Adicionar')));
+    await t.pumpAndSettle();
+
+    expect(repo.escalacoesCriadas, [
+      (missaId: 'm1', coroinhaId: 'c3', funcao: ''),
+    ]);
+    expect(find.byType(AlertDialog), findsNothing);
+  });
+
+  testWidgets('EQ17: o diálogo avisa o que acontece com a função em branco',
+      (t) async {
+    repo.coroinhasCadastrados = [const Coroinha(id: 'c3', nome: 'Carla')];
+    await montar(t);
+
+    await abrirAdicionar(t);
+
+    expect(
+      find.text('Se ficar em branco, a função será "A definir".'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('EQ14: conflito de horário mostra a mensagem do banco', (
