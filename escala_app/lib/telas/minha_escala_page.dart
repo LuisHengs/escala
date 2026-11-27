@@ -253,6 +253,8 @@ class _MinhaEscalaPageState extends State<MinhaEscalaPage> {
     // Mesma regra do banco: a partir de 2h antes (inclusive o instante exato)
     // a confirmação já conta como atrasada.
     final passouDoPrazo = !widget.agora().isBefore(item.limiteParaConfirmar);
+    // A missa já começou: o banco não aceita mais pedir troca nem sair.
+    final emAndamento = !widget.agora().isBefore(item.inicio);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -290,7 +292,9 @@ class _MinhaEscalaPageState extends State<MinhaEscalaPage> {
               ),
             ],
             const SizedBox(height: 8),
-            if (item.autoEscalada) ...[
+            if (emAndamento)
+              const Chip(label: Text('Em andamento'))
+            else if (item.autoEscalada) ...[
               Text('Você se escalou', style: estilos.bodySmall),
               TextButton(
                 onPressed: ocupada ? null : () => _sairDaEscala(item),

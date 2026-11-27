@@ -29,10 +29,10 @@ begin
     values (v_ana, 'Ana (teste)'), (v_bia, 'Bia (teste)');
   insert into public.locais (id, nome) values (v_local, 'Local de teste');
   insert into public.missas (id, inicio, local_id) values
-    (v_m1800, '2026-11-22 18:00:00-03', v_local),
-    (v_m1900, '2026-11-22 19:00:00-03', v_local),
-    (v_ma,    '2026-11-29 10:00:00-03', v_local),
-    (v_mb,    '2026-11-29 15:00:00-03', v_local);
+    (v_m1800, '2036-11-22 18:00:00-03', v_local),
+    (v_m1900, '2036-11-22 19:00:00-03', v_local),
+    (v_ma,    '2036-11-29 10:00:00-03', v_local),
+    (v_mb,    '2036-11-29 15:00:00-03', v_local);
 
   insert into public.escalacoes (missa_id, coroinha_id, funcao) values
     (v_m1800, v_ana, 'turiferário'),
@@ -42,15 +42,15 @@ begin
 
   -- ---------- Teste M1: o período acompanha o novo horário ----------
   update public.missas
-     set inicio = '2026-11-22 20:00:00-03'
+     set inicio = '2036-11-22 20:00:00-03'
    where id = v_m1800;
 
   select periodo into v_periodo
     from public.escalacoes
    where missa_id = v_m1800 and coroinha_id = v_ana;
   if v_periodo is distinct from tstzrange(
-       '2026-11-22 20:00:00-03'::timestamptz,
-       '2026-11-22 21:00:00-03'::timestamptz) then
+       '2036-11-22 20:00:00-03'::timestamptz,
+       '2036-11-22 21:00:00-03'::timestamptz) then
     raise exception
       'FALHOU [M1]: o período da Ana deveria ser 20:00-21:00 depois de mover a missa, mas está em: %',
       v_periodo;
@@ -61,8 +61,8 @@ begin
     from public.escalacoes
    where missa_id = v_m1900 and coroinha_id = v_bia;
   if v_periodo is distinct from tstzrange(
-       '2026-11-22 19:00:00-03'::timestamptz,
-       '2026-11-22 20:00:00-03'::timestamptz) then
+       '2036-11-22 19:00:00-03'::timestamptz,
+       '2036-11-22 20:00:00-03'::timestamptz) then
     raise exception
       'FALHOU [M1]: a escalação da Bia (outra missa) não deveria mudar, mas o período está em: %',
       v_periodo;
@@ -73,7 +73,7 @@ begin
   v_bloqueou := false;
   begin
     update public.missas
-       set inicio = '2026-11-29 10:30:00-03'
+       set inicio = '2036-11-29 10:30:00-03'
      where id = v_mb;
   exception
     when exclusion_violation then
@@ -85,7 +85,7 @@ begin
   end if;
 
   select inicio into v_inicio from public.missas where id = v_mb;
-  if v_inicio is distinct from '2026-11-29 15:00:00-03'::timestamptz then
+  if v_inicio is distinct from '2036-11-29 15:00:00-03'::timestamptz then
     raise exception
       'FALHOU [M2]: a missa deveria ter ficado no horário original (15:00), mas está em: %',
       v_inicio;
@@ -94,7 +94,7 @@ begin
   -- ---------- Teste M3: exatamente 1h depois da outra missa é permitido ----------
   begin
     update public.missas
-       set inicio = '2026-11-29 11:00:00-03'
+       set inicio = '2036-11-29 11:00:00-03'
      where id = v_mb;
   exception
     when exclusion_violation then

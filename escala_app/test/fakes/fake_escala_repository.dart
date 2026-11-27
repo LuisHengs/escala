@@ -68,6 +68,29 @@ class FakeEscalaRepository implements EscalaRepository {
     aoCriarLocal?.call(nome);
   }
 
+  // ---------- administração: renomear / remover local ----------
+
+  final locaisRenomeados = <(String, String)>[]; // (id, nome recebido)
+  final locaisRemovidos = <String>[];
+  Object? erroAoRenomearLocal;
+  Object? erroAoRemoverLocal;
+  void Function(String id, String nome)? aoRenomearLocal;
+  void Function(String id)? aoRemoverLocal;
+
+  @override
+  Future<void> renomearLocal(String id, String nome) async {
+    locaisRenomeados.add((id, nome));
+    if (erroAoRenomearLocal != null) throw erroAoRenomearLocal!;
+    aoRenomearLocal?.call(id, nome);
+  }
+
+  @override
+  Future<void> removerLocal(String id) async {
+    locaisRemovidos.add(id);
+    if (erroAoRemoverLocal != null) throw erroAoRemoverLocal!;
+    aoRemoverLocal?.call(id);
+  }
+
   // ---------- administração: missas ----------
 
   /// O que missas() devolve. O teste pode trocar a lista a qualquer hora.

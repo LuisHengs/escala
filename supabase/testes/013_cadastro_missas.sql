@@ -99,20 +99,20 @@ begin
 
   -- ---------- C4: criar_missa ----------
   v_erro := pg_temp.tentar(
-    format('select public.criar_missa(%L::timestamptz, %L::uuid)', '2026-12-06 18:00:00-03', v_local), v_ana);
+    format('select public.criar_missa(%L::timestamptz, %L::uuid)', '2036-12-06 18:00:00-03', v_local), v_ana);
   if v_erro is distinct from 'NAO_AUTORIZADO' then
     raise exception 'FALHOU [CM4]: coroinha criando missa deveria dar NAO_AUTORIZADO, mas veio: %',
       coalesce(v_erro, '(nenhum erro)');
   end if;
 
   v_erro := pg_temp.tentar(
-    format('select public.criar_missa(%L::timestamptz, %L::uuid)', '2026-12-06 18:00:00-03', v_local), v_adm);
+    format('select public.criar_missa(%L::timestamptz, %L::uuid)', '2036-12-06 18:00:00-03', v_local), v_adm);
   if v_erro is not null then
     raise exception 'FALHOU [CM4]: o admin deveria conseguir criar a missa, mas veio o erro: %', v_erro;
   end if;
   select m.id, m.inicio, m.local_id into v_missa, v_inicio, v_lid
     from public.missas m where m.local_id = v_local;
-  if v_missa is null or v_inicio <> '2026-12-06 18:00:00-03' then
+  if v_missa is null or v_inicio <> '2036-12-06 18:00:00-03' then
     raise exception 'FALHOU [CM4]: a missa criada deveria estar às 18:00 no local de teste';
   end if;
 
@@ -125,7 +125,7 @@ begin
 
   v_erro := pg_temp.tentar(
     format('select public.criar_missa(%L::timestamptz, %L::uuid)',
-           '2026-12-06 18:00:00-03', gen_random_uuid()), v_adm);
+           '2036-12-06 18:00:00-03', gen_random_uuid()), v_adm);
   if v_erro is distinct from 'LOCAL_INEXISTENTE' then
     raise exception 'FALHOU [CM4]: local inexistente deveria dar LOCAL_INEXISTENTE, mas veio: %',
       coalesce(v_erro, '(nenhum erro)');
@@ -137,7 +137,7 @@ begin
 
   v_erro := pg_temp.tentar(
     format('select public.editar_missa(%L::uuid, %L::timestamptz, %L::uuid)',
-           v_missa, '2026-12-06 19:00:00-03', v_local), v_ana);
+           v_missa, '2036-12-06 19:00:00-03', v_local), v_ana);
   if v_erro is distinct from 'NAO_AUTORIZADO' then
     raise exception 'FALHOU [CM5]: coroinha editando missa deveria dar NAO_AUTORIZADO, mas veio: %',
       coalesce(v_erro, '(nenhum erro)');
@@ -145,7 +145,7 @@ begin
 
   v_erro := pg_temp.tentar(
     format('select public.editar_missa(%L::uuid, %L::timestamptz, %L::uuid)',
-           gen_random_uuid(), '2026-12-06 19:00:00-03', v_local), v_adm);
+           gen_random_uuid(), '2036-12-06 19:00:00-03', v_local), v_adm);
   if v_erro is distinct from 'MISSA_INEXISTENTE' then
     raise exception 'FALHOU [CM5]: missa inexistente deveria dar MISSA_INEXISTENTE, mas veio: %',
       coalesce(v_erro, '(nenhum erro)');
@@ -161,7 +161,7 @@ begin
 
   v_erro := pg_temp.tentar(
     format('select public.editar_missa(%L::uuid, %L::timestamptz, %L::uuid)',
-           v_missa, '2026-12-06 19:00:00-03', gen_random_uuid()), v_adm);
+           v_missa, '2036-12-06 19:00:00-03', gen_random_uuid()), v_adm);
   if v_erro is distinct from 'LOCAL_INEXISTENTE' then
     raise exception 'FALHOU [CM5]: local inexistente deveria dar LOCAL_INEXISTENTE, mas veio: %',
       coalesce(v_erro, '(nenhum erro)');
@@ -170,7 +170,7 @@ begin
   -- Ana escalada e CONFIRMADA na missa das 18:00; há outra missa às 20:00.
   insert into public.escalacoes (missa_id, coroinha_id, funcao, status)
     values (v_missa, v_ana, 'turiferário', 'confirmado');
-  insert into public.missas (inicio, local_id) values ('2026-12-06 20:00:00-03', v_local)
+  insert into public.missas (inicio, local_id) values ('2036-12-06 20:00:00-03', v_local)
     returning id into v_missaB;
   insert into public.escalacoes (missa_id, coroinha_id, funcao)
     values (v_missaB, v_ana, 'cruciferário');
@@ -178,12 +178,12 @@ begin
   -- Mover a missa das 18:00 para 19:00 (e trocar o local): permitido.
   v_erro := pg_temp.tentar(
     format('select public.editar_missa(%L::uuid, %L::timestamptz, %L::uuid)',
-           v_missa, '2026-12-06 19:00:00-03', v_local2), v_adm);
+           v_missa, '2036-12-06 19:00:00-03', v_local2), v_adm);
   if v_erro is not null then
     raise exception 'FALHOU [CM5]: o admin deveria conseguir mover a missa, mas veio o erro: %', v_erro;
   end if;
   select m.inicio, m.local_id into v_inicio, v_lid from public.missas m where m.id = v_missa;
-  if v_inicio <> '2026-12-06 19:00:00-03' or v_lid is distinct from v_local2 then
+  if v_inicio <> '2036-12-06 19:00:00-03' or v_lid is distinct from v_local2 then
     raise exception 'FALHOU [CM5]: a missa deveria estar às 19:00 no segundo local';
   end if;
   select e.status, e.periodo into v_status, v_periodo
@@ -191,20 +191,20 @@ begin
   if v_status is distinct from 'confirmado' then
     raise exception 'FALHOU [CM5]: a presença confirmada deveria ser mantida, mas o status é %', v_status;
   end if;
-  if lower(v_periodo) <> '2026-12-06 19:00:00-03' then
+  if lower(v_periodo) <> '2036-12-06 19:00:00-03' then
     raise exception 'FALHOU [CM5]: o período da escalação deveria acompanhar a missa (19:00)';
   end if;
 
   -- Mover a missa das 19:00 para 20:30 conflita com a das 20:00 (mesma Ana).
   v_erro := pg_temp.tentar(
     format('select public.editar_missa(%L::uuid, %L::timestamptz, %L::uuid)',
-           v_missa, '2026-12-06 20:30:00-03', v_local2), v_adm);
+           v_missa, '2036-12-06 20:30:00-03', v_local2), v_adm);
   if v_erro is distinct from 'CONFLITO_DE_HORARIO' then
     raise exception 'FALHOU [CM5]: mover para um horário em conflito deveria dar CONFLITO_DE_HORARIO, mas veio: %',
       coalesce(v_erro, '(nenhum erro)');
   end if;
   select m.inicio into v_inicio from public.missas m where m.id = v_missa;
-  if v_inicio <> '2026-12-06 19:00:00-03' then
+  if v_inicio <> '2036-12-06 19:00:00-03' then
     raise exception 'FALHOU [CM5]: após o conflito a missa deveria continuar às 19:00, mas está em %', v_inicio;
   end if;
 

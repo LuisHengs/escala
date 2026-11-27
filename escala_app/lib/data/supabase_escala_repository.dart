@@ -12,6 +12,7 @@ import 'pessoa_escalavel.dart';
 import 'escalado_na_missa.dart';
 import 'pendencia_em_atraso.dart';
 import 'pessoa.dart';
+import 'janela_de_missas.dart';
 
 /// A versão de verdade: fala com o Supabase. É o ÚNICO arquivo (junto com o
 /// main.dart) que conhece o pacote supabase_flutter.
@@ -108,7 +109,10 @@ class SupabaseEscalaRepository implements EscalaRepository {
           'missas!inner(inicio, locais(nome)), trocas(id, status)',
         )
         .eq('coroinha_id', usuario.id)
-        .gte('missas.inicio', DateTime.now().toUtc().toIso8601String());
+        .gte(
+          'missas.inicio',
+          inicioDaJanela(DateTime.now()).toUtc().toIso8601String(),
+        );
 
     return ItemEscala.listaDeJson(linhas);
   }
@@ -178,12 +182,25 @@ class SupabaseEscalaRepository implements EscalaRepository {
   }
 
   @override
+  Future<void> renomearLocal(String id, String nome) async {
+    await _chamarRegra('renomear_local', {'p_id': id, 'p_nome': nome});
+  }
+
+  @override
+  Future<void> removerLocal(String id) async {
+    await _chamarRegra('remover_local', {'p_id': id});
+  }
+
+  @override
   Future<List<MissaCadastrada>> missas() async {
     // A RLS deixa qualquer membro ler as missas e os locais.
     final linhas = await _client
         .from('missas')
         .select('id, inicio, local_id, escala_livre, locais(nome)')
-        .gte('inicio', DateTime.now().toUtc().toIso8601String());
+        .gte(
+          'inicio',
+          inicioDaJanela(DateTime.now()).toUtc().toIso8601String(),
+        );
     return MissaCadastrada.listaDeJson(linhas);
   }
 

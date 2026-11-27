@@ -22,9 +22,9 @@ begin
     values (v_ana, 'Ana (teste)'), (v_bia, 'Bia (teste)');
   insert into public.locais (id, nome) values (v_local, 'Local de teste');
   insert into public.missas (id, inicio, local_id) values
-    (v_m1800, '2026-11-22 18:00:00-03', v_local),
-    (v_m1830, '2026-11-22 18:30:00-03', v_local),
-    (v_m1900, '2026-11-22 19:00:00-03', v_local);
+    (v_m1800, '2036-11-22 18:00:00-03', v_local),
+    (v_m1830, '2036-11-22 18:30:00-03', v_local),
+    (v_m1900, '2036-11-22 19:00:00-03', v_local);
 
   -- A Ana já está escalada às 18:00.
   insert into public.escalacoes (missa_id, coroinha_id, funcao)

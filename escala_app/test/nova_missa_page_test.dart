@@ -392,4 +392,22 @@ void main() {
       ]);
     },
   );
+
+  testWidgets('NM17: horário no passado mostra a mensagem do banco', (t) async {
+    repo.erroAoCriarMissa = const HorarioNoPassado(
+      'Escolha um horário que ainda não passou.',
+    );
+    await abrir(t, escolhida: domingo1800);
+    await escolherLocal(t, 'Matriz');
+    await escolherDataHora(t);
+
+    await salvar(t);
+
+    expect(
+      find.text('Escolha um horário que ainda não passou.'),
+      findsOneWidget,
+    );
+    expect(find.text('Nova missa'), findsOneWidget);
+    expect(resultado, isNull);
+  });
 }

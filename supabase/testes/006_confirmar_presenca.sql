@@ -20,7 +20,7 @@
 
 do $$
 declare
-  v_ref     timestamptz := '2026-11-22 18:00:00-03';
+  v_ref     timestamptz := '2036-11-22 18:00:00-03';
   v_local   uuid := gen_random_uuid();
   v_ana     uuid := gen_random_uuid();
   v_bia     uuid := gen_random_uuid();

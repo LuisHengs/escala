@@ -470,6 +470,45 @@ void main() {
     expect(find.text('Algo deu errado. Tente de novo.'), findsNothing);
   });
 
+  // ---------- missa em andamento ----------
+
+  testWidgets('P36: missa em andamento mostra o aviso e não oferece troca', (
+    t,
+  ) async {
+    repo.escala = [item()]; // 18:00
+    await montar(t, agora: DateTime(2026, 11, 22, 18, 30));
+
+    expect(find.text('Em andamento'), findsOneWidget);
+    expect(find.text('Pedir troca'), findsNothing);
+  });
+
+  testWidgets('P37: missa em andamento escolhida por mim não oferece sair', (
+    t,
+  ) async {
+    repo.escala = [item(auto: true)];
+    await montar(t, agora: DateTime(2026, 11, 22, 18, 30));
+
+    expect(find.text('Em andamento'), findsOneWidget);
+    expect(find.text('Sair da escala'), findsNothing);
+  });
+
+  testWidgets('P38: [guarda] em andamento, ainda dá para confirmar', (t) async {
+    repo.escala = [item()];
+    await montar(t, agora: DateTime(2026, 11, 22, 18, 30));
+
+    expect(find.text('Confirmar presença'), findsOneWidget);
+  });
+
+  testWidgets('P39: [guarda] antes de começar não aparece Em andamento', (
+    t,
+  ) async {
+    repo.escala = [item()];
+    await montar(t, agora: DateTime(2026, 11, 22, 17, 59));
+
+    expect(find.text('Em andamento'), findsNothing);
+    expect(find.text('Pedir troca'), findsOneWidget);
+  });
+
   // ---------- área do administrador ----------
 
   testWidgets('P24: o administrador vê o botão Administração', (t) async {

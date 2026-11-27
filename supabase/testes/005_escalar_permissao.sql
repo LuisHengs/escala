@@ -30,7 +30,7 @@ begin
     (v_ana, 'Ana (teste)', 'coroinha');
   insert into public.locais (id, nome) values (v_local, 'Local de teste');
   insert into public.missas (id, inicio, local_id)
-    values (v_missa, '2026-11-22 18:00:00-03', v_local);
+    values (v_missa, '2036-11-22 18:00:00-03', v_local);
 
   -- ---------- Teste P1: coroinha comum NÃO pode escalar ----------
   perform set_config('request.jwt.claims',

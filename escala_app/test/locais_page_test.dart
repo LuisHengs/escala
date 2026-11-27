@@ -40,6 +40,17 @@ void main() {
     expect(find.text('Capela'), findsOneWidget);
   });
 
+  Future<void> abrirMenu(WidgetTester t, String nome) async {
+    await t.tap(find.byTooltip('Opções de $nome'));
+    await t.pumpAndSettle();
+  }
+
+  // O campo do diálogo (a tela também tem um TextField, o de adicionar).
+  Finder campoDoDialogo() => find.descendant(
+    of: find.byType(AlertDialog),
+    matching: find.byType(TextField),
+  );
+
   testWidgets('LO2: sem locais, avisa que não há nenhum', (t) async {
     await montar(t);
 
@@ -142,6 +153,184 @@ void main() {
       await adicionar(t, 'Matriz');
 
       expect(repo.locaisCriados, ['Matriz']); // criou, uma única vez
+      expect(find.text('Não foi possível carregar os locais.'), findsOneWidget);
+      expect(find.text('Algo deu errado. Tente de novo.'), findsNothing);
+    },
+  );
+
+  testWidgets('LO10: cada local tem um menu com Renomear e Remover', (t) async {
+    repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+    await montar(t);
+
+    await abrirMenu(t, 'Matriz');
+
+    expect(find.text('Renomear'), findsOneWidget);
+    expect(find.text('Remover'), findsOneWidget);
+  });
+
+  testWidgets(
+    'LO11: renomear abre o nome atual, salva sem espaços e recarrega a lista',
+    (t) async {
+      repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+      repo.aoRenomearLocal = (id, nome) =>
+          repo.locaisCadastrados = [Local(id: id, nome: nome)];
+      await montar(t);
+
+      await abrirMenu(t, 'Matriz');
+      await t.tap(find.text('Renomear'));
+      await t.pumpAndSettle();
+      expect(t.widget<TextField>(campoDoDialogo()).controller!.text, 'Matriz');
+
+      await t.enterText(campoDoDialogo(), '  Capela Nova  ');
+      await t.tap(find.widgetWithText(FilledButton, 'Salvar'));
+      await t.pumpAndSettle();
+
+      expect(repo.locaisRenomeados, [('l1', 'Capela Nova')]);
+      expect(repo.cargasLocais, 2);
+      expect(find.text('Capela Nova'), findsOneWidget);
+      expect(find.text('Matriz'), findsNothing);
+    },
+  );
+
+  testWidgets('LO12: cancelar o renomear não chama o repositório', (t) async {
+    repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+    await montar(t);
+
+    await abrirMenu(t, 'Matriz');
+    await t.tap(find.text('Renomear'));
+    await t.pumpAndSettle();
+    await t.enterText(campoDoDialogo(), 'Outro');
+    await t.tap(find.text('Cancelar'));
+    await t.pumpAndSettle();
+
+    expect(repo.locaisRenomeados, isEmpty);
+    expect(repo.cargasLocais, 1);
+    expect(find.text('Matriz'), findsOneWidget);
+  });
+
+  testWidgets('LO13: renomear com nome em branco não chama e avisa', (t) async {
+    repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+    await montar(t);
+
+    await abrirMenu(t, 'Matriz');
+    await t.tap(find.text('Renomear'));
+    await t.pumpAndSettle();
+    await t.enterText(campoDoDialogo(), '   ');
+    await t.tap(find.widgetWithText(FilledButton, 'Salvar'));
+    await t.pumpAndSettle();
+
+    expect(repo.locaisRenomeados, isEmpty);
+    expect(find.text('Informe o nome do local.'), findsOneWidget);
+  });
+
+  testWidgets(
+    'LO14: erro de regra ao renomear mostra a mensagem e não recarrega',
+    (t) async {
+      repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+      repo.erroAoRenomearLocal = const LocalDuplicado(
+        'Já existe um local com esse nome.',
+      );
+      await montar(t);
+
+      await abrirMenu(t, 'Matriz');
+      await t.tap(find.text('Renomear'));
+      await t.pumpAndSettle();
+      await t.enterText(campoDoDialogo(), 'Capela');
+      await t.tap(find.widgetWithText(FilledButton, 'Salvar'));
+      await t.pumpAndSettle();
+
+      expect(find.text('Já existe um local com esse nome.'), findsOneWidget);
+      expect(repo.cargasLocais, 1);
+    },
+  );
+
+  testWidgets('LO15: remover pede confirmação, remove e recarrega', (t) async {
+    repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+    repo.aoRemoverLocal = (_) => repo.locaisCadastrados = [];
+    await montar(t);
+
+    await abrirMenu(t, 'Matriz');
+    await t.tap(find.text('Remover'));
+    await t.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(repo.locaisRemovidos, isEmpty); // ainda não removeu
+    await t.tap(find.widgetWithText(FilledButton, 'Remover'));
+    await t.pumpAndSettle();
+
+    expect(repo.locaisRemovidos, ['l1']);
+    expect(repo.cargasLocais, 2);
+    expect(find.text('Nenhum local cadastrado.'), findsOneWidget);
+  });
+
+  testWidgets('LO16: cancelar a remoção não chama o repositório', (t) async {
+    repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+    await montar(t);
+
+    await abrirMenu(t, 'Matriz');
+    await t.tap(find.text('Remover'));
+    await t.pumpAndSettle();
+    await t.tap(find.text('Cancelar'));
+    await t.pumpAndSettle();
+
+    expect(repo.locaisRemovidos, isEmpty);
+    expect(find.text('Matriz'), findsOneWidget);
+  });
+
+  testWidgets('LO17: local em uso mostra a mensagem do banco e não recarrega', (
+    t,
+  ) async {
+    repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+    repo.erroAoRemoverLocal = const LocalEmUso(
+      'Este local tem missas cadastradas e não pode ser removido.',
+    );
+    await montar(t);
+
+    await abrirMenu(t, 'Matriz');
+    await t.tap(find.text('Remover'));
+    await t.pumpAndSettle();
+    await t.tap(find.widgetWithText(FilledButton, 'Remover'));
+    await t.pumpAndSettle();
+
+    expect(
+      find.text('Este local tem missas cadastradas e não pode ser removido.'),
+      findsOneWidget,
+    );
+    expect(repo.cargasLocais, 1);
+    expect(find.text('Matriz'), findsOneWidget);
+  });
+
+  testWidgets('LO18: erro inesperado ao remover mostra mensagem genérica', (
+    t,
+  ) async {
+    repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+    repo.erroAoRemoverLocal = Exception('SocketException: sem rede');
+    await montar(t);
+
+    await abrirMenu(t, 'Matriz');
+    await t.tap(find.text('Remover'));
+    await t.pumpAndSettle();
+    await t.tap(find.widgetWithText(FilledButton, 'Remover'));
+    await t.pumpAndSettle();
+
+    expect(find.text('Algo deu errado. Tente de novo.'), findsOneWidget);
+    expect(find.textContaining('Socket'), findsNothing);
+  });
+
+  testWidgets(
+    'LO19: [guarda] se só a recarga falhar, não diz que a remoção falhou',
+    (t) async {
+      repo.locaisCadastrados = [const Local(id: 'l1', nome: 'Matriz')];
+      repo.aoRemoverLocal = (_) =>
+          repo.erroAoCarregarLocais = Exception('sem rede');
+      await montar(t);
+
+      await abrirMenu(t, 'Matriz');
+      await t.tap(find.text('Remover'));
+      await t.pumpAndSettle();
+      await t.tap(find.widgetWithText(FilledButton, 'Remover'));
+      await t.pumpAndSettle();
+
+      expect(repo.locaisRemovidos, ['l1']); // removeu, uma única vez
       expect(find.text('Não foi possível carregar os locais.'), findsOneWidget);
       expect(find.text('Algo deu errado. Tente de novo.'), findsNothing);
     },

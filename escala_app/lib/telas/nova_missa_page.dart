@@ -5,6 +5,7 @@ import '../data/local.dart';
 import '../data/missa_cadastrada.dart';
 import '../formatacao.dart';
 import '../mensagem_de_erro.dart';
+import '../data/janela_de_missas.dart';
 
 /// Como a tela pergunta a data e a hora. [atual] é o horário já escolhido (o
 /// da missa, ao editar), para o seletor abrir nele; nulo se ainda não há.
@@ -22,10 +23,13 @@ Future<DateTime?> escolherDataHoraDoSistema(
   DateTime? atual,
 ) async {
   final agora = DateTime.now();
+  final primeiroDia = primeiroDiaParaEscolher(agora);
+  final inicial = atual ?? agora;
   final data = await showDatePicker(
     context: context,
-    initialDate: atual ?? agora,
-    firstDate: DateTime(agora.year - 1),
+    // O calendário não aceita um dia inicial anterior ao primeiro dia.
+    initialDate: inicial.isBefore(primeiroDia) ? primeiroDia : inicial,
+    firstDate: primeiroDia,
     lastDate: DateTime(agora.year + 2),
   );
   if (data == null || !context.mounted) return null;

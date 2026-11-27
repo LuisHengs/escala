@@ -30,6 +30,8 @@ void main() {
     // Cadastro de locais e missas
     'LOCAL_DUPLICADO': isA<LocalDuplicado>(),
     'HORARIO_INVALIDO': isA<HorarioInvalido>(),
+    'HORARIO_NO_PASSADO': isA<HorarioNoPassado>(),
+    'LOCAL_EM_USO': isA<LocalEmUso>(),
     'LOCAL_INEXISTENTE': isA<LocalInexistente>(),
     // Gestão de membros e da escala
     'VALOR_INVALIDO': isA<ValorInvalido>(),

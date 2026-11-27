@@ -80,6 +80,14 @@ abstract class EscalaRepository {
   /// [RegraDeNegocio] (ex.: LocalDuplicado, NomeInvalido).
   Future<void> criarLocal(String nome);
 
+  /// (Administrador) Muda o nome de um local. Falhas de regra chegam como
+  /// [RegraDeNegocio] (ex.: LocalDuplicado, NomeInvalido, LocalInexistente).
+  Future<void> renomearLocal(String id, String nome);
+
+  /// (Administrador) Remove um local que não tem missas. Se tiver, chega
+  /// [LocalEmUso].
+  Future<void> removerLocal(String id);
+
   /// (Administrador) As missas cadastradas a partir de agora, em ordem de
   /// horário, com o nome do local.
   Future<List<MissaCadastrada>> missas();

@@ -23,7 +23,7 @@ begin
   insert into public.perfis (id, nome) values (v_ana, 'Ana (teste)');
   insert into public.locais (id, nome) values (v_local, 'Local de teste');
   insert into public.missas (id, inicio, local_id)
-    values (v_missa, '2026-11-22 18:00:00-03', v_local);
+    values (v_missa, '2036-11-22 18:00:00-03', v_local);
   insert into public.escalacoes (missa_id, coroinha_id, funcao)
     values (v_missa, v_ana, 'turiferário');
 
@@ -34,7 +34,7 @@ begin
 
   -- ---------- Teste M4: o horário da missa muda ----------
   update public.missas
-     set inicio = '2026-11-22 20:00:00-03'
+     set inicio = '2036-11-22 20:00:00-03'
    where id = v_missa;
 
   select status, confirmado_com_atraso into v_status, v_atraso

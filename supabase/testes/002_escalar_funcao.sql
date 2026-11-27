@@ -28,8 +28,8 @@ begin
     (v_ana, 'Ana (teste)', 'coroinha');
   insert into public.locais (id, nome) values (v_local, 'Local de teste');
   insert into public.missas (id, inicio, local_id) values
-    (v_m1800, '2026-11-22 18:00:00-03', v_local),
-    (v_m1830, '2026-11-22 18:30:00-03', v_local);
+    (v_m1800, '2036-11-22 18:00:00-03', v_local),
+    (v_m1830, '2036-11-22 18:30:00-03', v_local);
 
   -- ---------- Entra como admin ----------
   perform set_config('request.jwt.claims',

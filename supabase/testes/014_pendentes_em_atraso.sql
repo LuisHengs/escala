@@ -40,9 +40,9 @@ begin
     (v_carlos, 'Carlos (teste)',      'coroinha');
   insert into public.locais (id, nome) values (v_local, 'Local de teste');
   insert into public.missas (id, inicio, local_id) values
-    (v_m1800, '2026-11-22 18:00:00-03', v_local),
-    (v_m1830, '2026-11-22 18:30:00-03', v_local),
-    (v_m1900, '2026-11-22 19:00:00-03', v_local);
+    (v_m1800, '2036-11-22 18:00:00-03', v_local),
+    (v_m1830, '2036-11-22 18:30:00-03', v_local),
+    (v_m1900, '2036-11-22 19:00:00-03', v_local);
   insert into public.escalacoes (missa_id, coroinha_id, funcao)
     values (v_m1800, v_ana, 'turiferário') returning id into v_e_ana;
   insert into public.escalacoes (missa_id, coroinha_id, funcao)
@@ -56,7 +56,7 @@ begin
   set local role authenticated;
   v_erro := null;
   begin
-    perform * from public.pendentes_em_atraso('2026-11-22 17:00:00-03');
+    perform * from public.pendentes_em_atraso('2036-11-22 17:00:00-03');
   exception
     when others then
       v_erro := sqlerrm;
@@ -75,7 +75,7 @@ begin
   -- ---------- D2: fora do prazo -> vazia; dentro -> só os pendentes ----------
   -- 15:30: 18:00 começa em 2h30 e 19:00 em 3h30 -> ainda fora do prazo.
   select coalesce(array_agg(p.escalacao_id), '{}') into v_ids
-    from public.pendentes_em_atraso('2026-11-22 15:30:00-03') p
+    from public.pendentes_em_atraso('2036-11-22 15:30:00-03') p
    where p.escalacao_id in (v_e_ana, v_e_bia, v_e_car);
   if cardinality(v_ids) <> 0 then
     raise exception 'FALHOU [D2]: às 15:30 a lista deveria estar vazia, mas veio % item(ns)',
@@ -85,7 +85,7 @@ begin
   -- 17:00: 18:00 em 1h (dentro); 19:00 em exatamente 2h (borda: dentro);
   -- 18:30 não aparece porque está confirmada.
   select coalesce(array_agg(p.escalacao_id order by p.inicio), '{}') into v_ids
-    from public.pendentes_em_atraso('2026-11-22 17:00:00-03') p
+    from public.pendentes_em_atraso('2036-11-22 17:00:00-03') p
    where p.escalacao_id in (v_e_ana, v_e_bia, v_e_car);
   if v_ids is distinct from array[v_e_ana, v_e_bia] then
     raise exception 'FALHOU [D2]: às 17:00 deveriam vir a Ana e a Bia (e não o Carlos, confirmado), mas vieram % item(ns)',
@@ -95,7 +95,7 @@ begin
   -- ---------- D3: bordas ----------
   -- 16:00 em ponto: a missa das 18:00 está a exatamente 2h -> entra.
   select coalesce(array_agg(p.escalacao_id), '{}') into v_ids
-    from public.pendentes_em_atraso('2026-11-22 16:00:00-03') p
+    from public.pendentes_em_atraso('2036-11-22 16:00:00-03') p
    where p.escalacao_id in (v_e_ana, v_e_bia, v_e_car);
   if v_ids is distinct from array[v_e_ana] then
     raise exception 'FALHOU [D3]: às 16:00 em ponto só a Ana deveria constar (2h exatas antes das 18:00)';
@@ -103,7 +103,7 @@ begin
 
   -- 15:59:59: um segundo antes da borda -> ainda fora.
   select coalesce(array_agg(p.escalacao_id), '{}') into v_ids
-    from public.pendentes_em_atraso('2026-11-22 15:59:59-03') p
+    from public.pendentes_em_atraso('2036-11-22 15:59:59-03') p
    where p.escalacao_id in (v_e_ana, v_e_bia, v_e_car);
   if cardinality(v_ids) <> 0 then
     raise exception 'FALHOU [D3]: às 15:59:59 a lista deveria estar vazia';
@@ -111,7 +111,7 @@ begin
 
   -- 18:00 em ponto: a missa começou -> sai da lista; a Bia (19:00) segue.
   select coalesce(array_agg(p.escalacao_id), '{}') into v_ids
-    from public.pendentes_em_atraso('2026-11-22 18:00:00-03') p
+    from public.pendentes_em_atraso('2036-11-22 18:00:00-03') p
    where p.escalacao_id in (v_e_ana, v_e_bia, v_e_car);
   if v_ids is distinct from array[v_e_bia] then
     raise exception 'FALHOU [D3]: às 18:00 em ponto a Ana não deveria constar (a missa começou), só a Bia';

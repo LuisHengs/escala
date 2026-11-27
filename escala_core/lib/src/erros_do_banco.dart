@@ -53,6 +53,14 @@ class HorarioInvalido extends RegraDeNegocio {
   const HorarioInvalido(super.mensagem);
 }
 
+class HorarioNoPassado extends RegraDeNegocio {
+  const HorarioNoPassado(super.mensagem);
+}
+
+class LocalEmUso extends RegraDeNegocio {
+  const LocalEmUso(super.mensagem);
+}
+
 class LocalInexistente extends RegraDeNegocio {
   const LocalInexistente(super.mensagem);
 }
@@ -149,6 +157,12 @@ RegraDeNegocio traduzirErroDoBanco(String codigo) {
     'LOCAL_DUPLICADO' =>
       const LocalDuplicado('Já existe um local com esse nome.'),
     'HORARIO_INVALIDO' => const HorarioInvalido('Informe um horário válido.'),
+    'HORARIO_NO_PASSADO' => const HorarioNoPassado(
+        'Escolha um horário que ainda não passou.',
+      ),
+    'LOCAL_EM_USO' => const LocalEmUso(
+        'Este local tem missas cadastradas e não pode ser removido.',
+      ),
     'LOCAL_INEXISTENTE' => const LocalInexistente('Local não encontrado.'),
     // Gestão de membros e da escala
     'VALOR_INVALIDO' => const ValorInvalido('Valor inválido.'),
