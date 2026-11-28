@@ -145,6 +145,11 @@ abstract class EscalaRepository {
   /// último administrador ativo é recusado (UltimoAdmin).
   Future<void> definirPapel({required String pessoaId, required String papel});
 
+  /// (Administrador) Apaga de vez uma pessoa INATIVA: perfil, login, dados do
+  /// responsável, escalações e trocas dela. Não dá para desfazer. Pessoa ativa
+  /// chega como [PessoaAtiva]; inexistente, como [PerfilInexistente].
+  Future<void> apagarPessoa(String pessoaId);
+
   /// (Coroinha) As missas futuras com escala livre em que a pessoa logada
   /// ainda NÃO está escalada, em ordem de horário.
   Future<List<MissaCadastrada>> missasAbertas();

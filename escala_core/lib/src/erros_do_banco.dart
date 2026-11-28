@@ -99,6 +99,10 @@ class SaidaNaoPermitida extends RegraDeNegocio {
   const SaidaNaoPermitida(super.mensagem);
 }
 
+class PessoaAtiva extends RegraDeNegocio {
+  const PessoaAtiva(super.mensagem);
+}
+
 // ---------- O que o app não sabe traduzir ----------
 
 /// Erro que o app não sabe traduzir (código novo no banco, falha técnica do
@@ -162,6 +166,9 @@ RegraDeNegocio traduzirErroDoBanco(String codigo) {
       ),
     'LOCAL_EM_USO' => const LocalEmUso(
         'Este local tem missas cadastradas e não pode ser removido.',
+      ),
+    'PESSOA_ATIVA' => const PessoaAtiva(
+        'Desative a pessoa antes de apagar.',
       ),
     'LOCAL_INEXISTENTE' => const LocalInexistente('Local não encontrado.'),
     // Gestão de membros e da escala

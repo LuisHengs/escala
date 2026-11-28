@@ -32,6 +32,7 @@ void main() {
     'HORARIO_INVALIDO': isA<HorarioInvalido>(),
     'HORARIO_NO_PASSADO': isA<HorarioNoPassado>(),
     'LOCAL_EM_USO': isA<LocalEmUso>(),
+    'PESSOA_ATIVA': isA<PessoaAtiva>(),
     'LOCAL_INEXISTENTE': isA<LocalInexistente>(),
     // Gestão de membros e da escala
     'VALOR_INVALIDO': isA<ValorInvalido>(),

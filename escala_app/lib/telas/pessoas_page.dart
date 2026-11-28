@@ -113,6 +113,16 @@ class _PessoasPageState extends State<PessoasPage> {
           () =>
               widget.repositorio.definirPapel(pessoaId: pessoa.id, papel: acao),
         );
+      case 'apagar':
+        final ok = await _confirmar(
+          titulo: 'Apagar pessoa?',
+          texto:
+              'Apagar ${pessoa.nome} de vez? Somem o acesso, a escala e as '
+              'trocas dessa pessoa. Não dá para desfazer.',
+          botao: 'Apagar',
+        );
+        if (!ok) return;
+        await _executar(() => widget.repositorio.apagarPessoa(pessoa.id));
     }
   }
 
@@ -177,6 +187,11 @@ class _PessoasPageState extends State<PessoasPage> {
                               value: 'admin',
                               child: Text('Tornar administrador'),
                             ),
+                      if (!pessoa.ativo)
+                        const PopupMenuItem(
+                          value: 'apagar',
+                          child: Text('Apagar'),
+                        ),
                     ],
                   ),
                 ),

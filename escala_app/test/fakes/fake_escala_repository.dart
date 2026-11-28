@@ -306,6 +306,17 @@ class FakeEscalaRepository implements EscalaRepository {
     papeisDefinidos.add((pessoaId: pessoaId, papel: papel));
   }
 
+  final pessoasApagadas = <String>[];
+  Object? erroAoApagarPessoa;
+  void Function(String pessoaId)? aoApagarPessoa;
+
+  @override
+  Future<void> apagarPessoa(String pessoaId) async {
+    if (erroAoApagarPessoa != null) throw erroAoApagarPessoa!;
+    pessoasApagadas.add(pessoaId);
+    aoApagarPessoa?.call(pessoaId);
+  }
+
   // ---------- escala ----------
 
   /// O que minhaEscala() devolve. O teste pode trocar a lista a qualquer hora.

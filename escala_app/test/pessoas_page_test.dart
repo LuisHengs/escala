@@ -308,4 +308,123 @@ void main() {
       );
     },
   );
+
+  // ---------- apagar (só quem está inativo) ----------
+
+  testWidgets('PG18: [guarda] pessoa ativa não tem a opção Apagar', (t) async {
+    repo.pessoasCadastradas = [ana];
+    await montar(t);
+
+    await abrirMenu(t, 'Ana');
+
+    expect(find.text('Apagar'), findsNothing);
+  });
+
+  testWidgets('PG19: pessoa inativa tem a opção Apagar no menu', (t) async {
+    repo.pessoasCadastradas = [caio];
+    await montar(t);
+
+    await abrirMenu(t, 'Caio');
+
+    expect(find.text('Apagar'), findsOneWidget);
+    expect(find.text('Ativar'), findsOneWidget);
+  });
+
+  testWidgets(
+    'PG20: Apagar pede confirmação, avisa que não tem volta e ainda não apaga',
+    (t) async {
+      repo.pessoasCadastradas = [caio];
+      await montar(t);
+
+      await escolherAcao(t, 'Caio', 'Apagar');
+
+      expect(find.text('Apagar pessoa?'), findsOneWidget);
+      expect(find.textContaining('Caio'), findsWidgets);
+      expect(find.textContaining('Não dá para desfazer'), findsOneWidget);
+      expect(noDialogo(find.text('Apagar')), findsOneWidget);
+      expect(noDialogo(find.text('Cancelar')), findsOneWidget);
+      expect(repo.pessoasApagadas, isEmpty);
+    },
+  );
+
+  testWidgets('PG21: confirmar apaga a pessoa e recarrega a lista', (t) async {
+    repo.pessoasCadastradas = [caio];
+    repo.aoApagarPessoa = (_) => repo.pessoasCadastradas = [];
+    await montar(t);
+    await escolherAcao(t, 'Caio', 'Apagar');
+
+    await t.tap(noDialogo(find.text('Apagar')));
+    await t.pumpAndSettle();
+
+    expect(repo.pessoasApagadas, ['p3']);
+    expect(repo.cargasPessoas, 2);
+    expect(find.text('Nenhuma pessoa cadastrada.'), findsOneWidget);
+  });
+
+  testWidgets('PG22: Cancelar na confirmação não apaga ninguém', (t) async {
+    repo.pessoasCadastradas = [caio];
+    await montar(t);
+    await escolherAcao(t, 'Caio', 'Apagar');
+
+    await t.tap(noDialogo(find.text('Cancelar')));
+    await t.pumpAndSettle();
+
+    expect(repo.pessoasApagadas, isEmpty);
+    expect(repo.cargasPessoas, 1);
+    expect(find.text('Caio'), findsOneWidget);
+  });
+
+  testWidgets('PG23: erro de regra mostra a mensagem e não recarrega', (
+    t,
+  ) async {
+    repo.pessoasCadastradas = [caio];
+    repo.erroAoApagarPessoa = const PessoaAtiva(
+      'Desative a pessoa antes de apagar.',
+    );
+    await montar(t);
+    await escolherAcao(t, 'Caio', 'Apagar');
+
+    await t.tap(noDialogo(find.text('Apagar')));
+    await t.pumpAndSettle();
+
+    expect(find.text('Desative a pessoa antes de apagar.'), findsOneWidget);
+    expect(repo.cargasPessoas, 1);
+    expect(find.text('Caio'), findsOneWidget);
+  });
+
+  testWidgets('PG24: erro inesperado ao apagar mostra mensagem genérica', (
+    t,
+  ) async {
+    repo.pessoasCadastradas = [caio];
+    repo.erroAoApagarPessoa = Exception('SocketException: sem rede');
+    await montar(t);
+    await escolherAcao(t, 'Caio', 'Apagar');
+
+    await t.tap(noDialogo(find.text('Apagar')));
+    await t.pumpAndSettle();
+
+    expect(find.text('Algo deu errado. Tente de novo.'), findsOneWidget);
+    expect(find.textContaining('Socket'), findsNothing);
+  });
+
+  testWidgets(
+    'PG25: [guarda] se só a recarga falhar, não diz que apagar falhou',
+    (t) async {
+      repo.pessoasCadastradas = [caio];
+      await montar(t);
+      repo.aoApagarPessoa = (_) =>
+          repo.erroAoCarregarPessoas = Exception('sem rede');
+      await escolherAcao(t, 'Caio', 'Apagar');
+
+      await t.tap(noDialogo(find.text('Apagar')));
+      await t.pumpAndSettle();
+
+      expect(repo.pessoasApagadas, ['p3']); // apagou, uma única vez
+      expect(find.text('Algo deu errado. Tente de novo.'), findsNothing);
+      expect(
+        find.text('Não foi possível carregar as pessoas.'),
+        findsOneWidget,
+      );
+    },
+  );
 }

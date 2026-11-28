@@ -316,6 +316,11 @@ class SupabaseEscalaRepository implements EscalaRepository {
   }
 
   @override
+  Future<void> apagarPessoa(String pessoaId) async {
+    await _chamarRegra('apagar_pessoa', {'p_perfil_id': pessoaId});
+  }
+
+  @override
   Future<List<MissaCadastrada>> missasAbertas() async {
     final meuId = _client.auth.currentUser!.id;
     final linhas = await _client
