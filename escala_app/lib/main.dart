@@ -36,7 +36,7 @@ Future<void> main() async {
 
   runApp(
     MaterialApp(
-      title: 'Escala Coroinhas',
+      title: 'Servir ao Altar',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
       home: Raiz(

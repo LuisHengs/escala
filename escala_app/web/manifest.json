@@ -1,11 +1,12 @@
 {
-    "name": "escala_app",
-    "short_name": "escala_app",
+    "name": "Servir ao Altar",
+    "short_name": "Altar",
+    "lang": "pt-BR",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#FFD213",
+    "description": "Escala dos coroinhas da Paróquia de São Vicente Ferrer: consulte as missas, confirme presença e troque de escala.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

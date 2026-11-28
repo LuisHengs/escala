@@ -95,7 +95,7 @@ class _TelaLogin extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Escala Coroinhas',
+              'Servir ao Altar',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 24),

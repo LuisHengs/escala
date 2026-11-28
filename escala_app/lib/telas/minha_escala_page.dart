@@ -8,6 +8,7 @@ import 'admin_page.dart';
 import 'trocas_disponiveis_page.dart';
 import 'missas_abertas_page.dart';
 import '../mensagem_de_erro.dart';
+import '../data/mensagens.dart';
 
 /// As próximas missas de quem está logado, com a situação da presença, o
 /// botão de confirmar e o pedido de troca.
@@ -231,18 +232,75 @@ class _MinhaEscalaPageState extends State<MinhaEscalaPage> {
           }
 
           final itens = snapshot.requireData;
-          if (itens.isEmpty) {
-            return const Center(child: Text('Você não tem missas escaladas.'));
-          }
+          if (itens.isEmpty) return _vazio(context);
           return RefreshIndicator(
             onRefresh: _puxarParaAtualizar,
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-              itemCount: itens.length,
-              itemBuilder: (context, i) => _cartao(context, itens[i]),
+              itemCount: itens.length + 1,
+              itemBuilder: (context, i) => i < itens.length
+                  ? _cartao(context, itens[i])
+                  : Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: _mensagem(context),
+                    ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// A mensagem do dia (texto e fonte): aparece na tela vazia e no fim da
+  /// lista de missas.
+  Widget _mensagem(BuildContext context) {
+    final estilos = Theme.of(context).textTheme;
+    final mensagem = mensagemDoDia(widget.agora());
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '“${mensagem.texto}”',
+          style: estilos.bodyLarge?.copyWith(fontStyle: FontStyle.italic),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '— ${mensagem.fonte}',
+          style: estilos.bodySmall,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  /// Sem missas: a frase de sempre, a mensagem do dia e um caminho para as
+  /// missas abertas (em vez de uma tela em branco).
+  Widget _vazio(BuildContext context) {
+    final estilos = Theme.of(context).textTheme;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.church_outlined, size: 48),
+            const SizedBox(height: 16),
+            Text(
+              'Você não tem missas escaladas.',
+              style: estilos.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            _mensagem(context),
+            const SizedBox(height: 24),
+            const SizedBox(height: 24),
+            OutlinedButton(
+              onPressed: _abrirMissasAbertas,
+              child: const Text('Ver missas abertas'),
+            ),
+          ],
+        ),
       ),
     );
   }
